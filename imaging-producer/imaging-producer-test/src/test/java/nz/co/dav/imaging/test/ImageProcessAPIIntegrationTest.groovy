@@ -48,9 +48,6 @@ class ImageProcessAPIIntegrationTest {
 
 	@Test
 	public void testProcessImage() {
-		//		Set<ImageScalingConfig> imageScalingConfigs = []
-		//		imageScalingConfigs << new ImageScalingConfig(scalingMode:'standard',width:1024,height:1024)
-
 
 		final FormDataContentDisposition dispo = FormDataContentDisposition
 				.name("uploadedImage")

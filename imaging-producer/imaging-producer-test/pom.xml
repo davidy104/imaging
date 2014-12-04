@@ -19,17 +19,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>imaging-producer-integration</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>imaging-producer-repository</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>imaging-producer-shared</artifactId>
+			<artifactId>imaging-producer-service</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
@@ -102,4 +92,5 @@
 			</build>
 		</profile>
 	</profiles>
+
 </project>

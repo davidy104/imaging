@@ -23,10 +23,8 @@ public class ImagingResource {
 	@Consumes("multipart/form-data")
 	public Response processImage(final @MultipartForm ImageProcessRequest imageProcessRequest) {
 		LOGGER.info("processImage start...");
-		LOGGER.info("imageProcessRequest:{} ",imageProcessRequest);
-		
-		
-		
+		LOGGER.info("imageProcessRequest:{} ", imageProcessRequest);
+
 		return Response.ok("Image processed ...").type(MediaType.APPLICATION_JSON).build();
 	}
 

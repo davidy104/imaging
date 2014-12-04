@@ -33,6 +33,7 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 	protected void configureCamelContext() {
 		bind(CamelContext.class).to(ImageCamelContext.class).asEagerSingleton();
 		bind(Registry.class).toProvider(RegistryProvider.class);
+		// bind(ImageEventConsumer.class).toProvider(ImageEventConsumerProvider.class).asEagerSingleton();
 		bind(Processor.class).annotatedWith(Names.named("imageMetadataRetrievingProcessor")).to(ImageMetadataRetrievingProcessor.class).asEagerSingleton();
 		bind(RouteBuilder.class).annotatedWith(Names.named("imageProcessRoute")).to(ImageProcessRoute.class).asEagerSingleton();
 		bind(ImageProcess.class);
@@ -57,6 +58,20 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 			return simpleRegistry;
 		}
 	}
+
+	// public static class ImageEventConsumerProvider implements
+	// Provider<ImageEventConsumer> {
+	// @Inject
+	// @Named("AWS.SQS_EVENT_QUEUE_NAME")
+	// String awsSqsEventQueueName;
+	//
+	// @Override
+	// public ImageEventConsumer get() {
+	// final String endpointUri = "aws-sqs://" + awsSqsEventQueueName +
+	// "?amazonSQSClient=#amazonSqs&delay=3000";
+	// return new ImageEventConsumer(endpointUri);
+	// }
+	// }
 
 	@Provides
 	public CamelContextNameStrategy camelContextNameStrategy() {

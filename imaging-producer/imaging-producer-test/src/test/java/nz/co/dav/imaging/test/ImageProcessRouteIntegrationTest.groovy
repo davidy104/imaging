@@ -7,7 +7,7 @@ import nz.co.dav.imaging.config.ConfigurationServiceModule
 import nz.co.dav.imaging.integration.ImageCamelContextModule
 import nz.co.dav.imaging.integration.ds.ImageProcess
 import nz.co.dav.imaging.model.AbstractImageInfo
-import nz.co.dav.imaging.model.ImageProcessRequest;
+import nz.co.dav.imaging.model.ImageProcessRequest
 import nz.co.dav.imaging.test.GuiceJUnitRunner.GuiceModules
 
 import org.apache.camel.CamelContext
@@ -65,5 +65,6 @@ class ImageProcessRouteIntegrationTest {
 	public void testRoute() {
 		String response = imageProcess.process(request)
 		log.info "response:{} $response"
+		Thread.sleep(20000)
 	}
 }
