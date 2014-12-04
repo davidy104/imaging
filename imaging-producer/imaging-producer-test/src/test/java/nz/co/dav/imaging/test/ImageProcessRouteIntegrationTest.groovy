@@ -5,12 +5,13 @@ import groovy.util.logging.Slf4j
 import nz.co.dav.imaging.SharedModule
 import nz.co.dav.imaging.config.ConfigurationServiceModule
 import nz.co.dav.imaging.integration.ImageCamelContextModule
-import nz.co.dav.imaging.integration.ds.ImageProcess
 import nz.co.dav.imaging.model.AbstractImageInfo
 import nz.co.dav.imaging.model.ImageProcessRequest
 import nz.co.dav.imaging.test.GuiceJUnitRunner.GuiceModules
 
 import org.apache.camel.CamelContext
+import org.apache.camel.Produce
+import org.apache.camel.ProducerTemplate
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -23,7 +24,6 @@ import com.google.inject.Inject
 @Slf4j
 class ImageProcessRouteIntegrationTest {
 
-
 	static final String[] IMAGS = [
 		"test01.JPG",
 		"test02.JPG",
@@ -32,12 +32,12 @@ class ImageProcessRouteIntegrationTest {
 	]
 
 	@Inject
-	ImageProcess imageProcess
-
-	@Inject
 	CamelContext camelContext
 
 	ImageProcessRequest request
+	
+	@Produce(uri="direct:ImageProcess")
+	private ProducerTemplate producerTemplate
 
 	@Before
 	void setUp(){
@@ -63,7 +63,7 @@ class ImageProcessRouteIntegrationTest {
 
 	@Test
 	public void testRoute() {
-		String response = imageProcess.process(request)
+		String response = producerTemplate.requestBody(request, String.class)
 		log.info "response:{} $response"
 		Thread.sleep(20000)
 	}

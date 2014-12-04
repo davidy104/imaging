@@ -8,6 +8,7 @@ import javax.servlet.ServletContextEvent;
 
 import nz.co.dav.imaging.config.ConfigurationServiceModule;
 import nz.co.dav.imaging.config.ResourceModule;
+import nz.co.dav.imaging.ds.ImagingDSModule;
 import nz.co.dav.imaging.integration.ImageCamelContextModule;
 
 import org.apache.camel.CamelContext;
@@ -34,6 +35,7 @@ public class Bootstrap extends GuiceResteasyBootstrapServletContextListener {
 		final List<Module> modules = Lists.<Module> newArrayList();
 		modules.add(new ImageCamelContextModule());
 		modules.add(new SharedModule());
+		modules.add(new ImagingDSModule());
 		injector = injector.createChildInjector(modules);
 		try {
 			this.camelContext = injector.getInstance(CamelContext.class);

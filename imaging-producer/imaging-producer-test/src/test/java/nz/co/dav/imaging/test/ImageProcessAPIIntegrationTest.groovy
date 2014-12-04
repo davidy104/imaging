@@ -32,9 +32,9 @@ class ImageProcessAPIIntegrationTest {
 
 	private Client jerseyClient
 
-	static final String IMAG = "test01.JPG";
+	static final String[] IMAGS = ["test01.JPG", "test02.JPG"]
 
-	byte[] imageBytes
+	Map<String,byte[]> imagesMap = [:]
 
 	@Inject
 	public void setJerseyClient(Client jerseyClient) {
@@ -43,27 +43,28 @@ class ImageProcessAPIIntegrationTest {
 
 	@Before
 	void setUp(){
-		imageBytes = Resources.toByteArray(Resources.getResource(IMAG))
+		IMAGS.eachWithIndex  {obj,i->
+			def imageName = "test-$i"
+			imagesMap.put(imageName, Resources.toByteArray(Resources.getResource(obj)))
+		}
 	}
 
 	@Test
 	public void testProcessImage() {
-
-		final FormDataContentDisposition dispo = FormDataContentDisposition
-				.name("uploadedImage")
-				.fileName("uploadedImage.jpg")
-				.size(imageBytes.length)
-				.build()
-
-		final FormDataBodyPart imageBodyPart = new FormDataBodyPart(dispo, imageBytes,
-				MediaType.APPLICATION_OCTET_STREAM_TYPE);
-
-
 		FormDataMultiPart multiPart = new FormDataMultiPart()
-		//				multiPart.field("imageProcessRequest", imageProcessRequest, MediaType.APPLICATION_JSON_TYPE)
 		multiPart.field("scalingConfig", "hello world")
-		multiPart.bodyPart(imageBodyPart)
-
+		
+		imagesMap.each{k,v->
+			final FormDataContentDisposition dispo = FormDataContentDisposition
+			.name(k)
+			.size(v.length)
+			.build()
+			
+			final FormDataBodyPart imageBodyPart = new FormDataBodyPart(dispo, v,
+				MediaType.APPLICATION_OCTET_STREAM_TYPE)
+			
+			multiPart.bodyPart(imageBodyPart)
+		}
 		ClientResponse response = jerseyClient.resource(imageServiceURI).path("process").type(MediaType.MULTIPART_FORM_DATA).post(ClientResponse.class,multiPart)
 
 		int statusCode = response.getStatus()

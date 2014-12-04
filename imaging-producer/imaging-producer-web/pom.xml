@@ -91,7 +91,9 @@
 						</connector>
 					</connectors>
 					<stopPort>18080</stopPort>
+					<!--  
 					<systemPropertiesFile>${project.basedir}/src/main/resources/image-sysprop.properties</systemPropertiesFile>
+					-->
 				</configuration>
 			</plugin>
 		</plugins>

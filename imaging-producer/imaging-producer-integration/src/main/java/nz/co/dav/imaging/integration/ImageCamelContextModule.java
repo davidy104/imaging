@@ -1,7 +1,6 @@
 package nz.co.dav.imaging.integration;
 
 import nz.co.dav.imaging.integration.config.ImageCamelContext;
-import nz.co.dav.imaging.integration.ds.ImageProcess;
 import nz.co.dav.imaging.integration.processor.ImageMetadataAggregationStrategy;
 import nz.co.dav.imaging.integration.processor.ImageMetadataRetrievingProcessor;
 import nz.co.dav.imaging.integration.processor.ImageScalingProcessor;
@@ -36,7 +35,6 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 		// bind(ImageEventConsumer.class).toProvider(ImageEventConsumerProvider.class).asEagerSingleton();
 		bind(Processor.class).annotatedWith(Names.named("imageMetadataRetrievingProcessor")).to(ImageMetadataRetrievingProcessor.class).asEagerSingleton();
 		bind(RouteBuilder.class).annotatedWith(Names.named("imageProcessRoute")).to(ImageProcessRoute.class).asEagerSingleton();
-		bind(ImageProcess.class);
 	}
 
 	public static class RegistryProvider implements Provider<Registry> {
