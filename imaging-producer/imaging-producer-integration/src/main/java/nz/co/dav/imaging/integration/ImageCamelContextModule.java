@@ -18,6 +18,10 @@ import org.apache.camel.spi.CamelContextNameStrategy;
 import org.apache.camel.spi.Registry;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.sns.AmazonSNSClient;
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -28,16 +32,30 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 	@Override
 	protected void configureCamelContext() {
 		bind(CamelContext.class).to(ImageCamelContext.class).asEagerSingleton();
+		bind(Registry.class).toProvider(RegistryProvider.class);
 		bind(Processor.class).annotatedWith(Names.named("imageMetadataRetrievingProcessor")).to(ImageMetadataRetrievingProcessor.class).asEagerSingleton();
 		bind(RouteBuilder.class).annotatedWith(Names.named("imageProcessRoute")).to(ImageProcessRoute.class).asEagerSingleton();
 		bind(ImageProcess.class);
 	}
 
-	@Provides
-	public Registry registry(final AmazonS3 amazonS3) {
-		final SimpleRegistry simpleRegistry = new SimpleRegistry();
-		simpleRegistry.put("amazonS3", amazonS3);
-		return simpleRegistry;
+	public static class RegistryProvider implements Provider<Registry> {
+		@Inject
+		AmazonS3 amazonS3;
+
+		@Inject
+		AmazonSQS amazonSQS;
+
+		@Inject
+		AmazonSNSClient amazonSNSClient;
+
+		@Override
+		public Registry get() {
+			final SimpleRegistry simpleRegistry = new SimpleRegistry();
+			simpleRegistry.put("amazonS3", amazonS3);
+			simpleRegistry.put("amazonSqs", amazonSQS);
+			simpleRegistry.put("amazonSns", amazonSNSClient);
+			return simpleRegistry;
+		}
 	}
 
 	@Provides

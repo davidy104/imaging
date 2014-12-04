@@ -28,6 +28,10 @@ class ConfigurationServiceImpl implements ConfigurationService{
 	@Named("NEO4J.HOST_URI")
 	String neo4jHostUri
 
+	@Inject
+	@Named("AWS.SQS_EVENT_QUEUE_NAME")
+	String awsSqsQueueName
+
 	@Override
 	public AWSCredentials getAWSCredentials() {
 		return new BasicAWSCredentials(awsAccessKey, awsSecretKey)
@@ -42,4 +46,6 @@ class ConfigurationServiceImpl implements ConfigurationService{
 	public String getAwsS3BucketName() {
 		return awsS3Bucket
 	}
+
+
 }

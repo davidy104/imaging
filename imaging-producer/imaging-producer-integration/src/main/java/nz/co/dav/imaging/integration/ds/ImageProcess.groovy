@@ -1,6 +1,7 @@
 package nz.co.dav.imaging.integration.ds;
 
 import groovy.util.logging.Slf4j
+import nz.co.dav.imaging.model.ImageProcessRequest;
 
 import org.apache.camel.Produce
 import org.apache.camel.ProducerTemplate

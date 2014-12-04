@@ -1,5 +1,7 @@
 package nz.co.dav.imaging.integration.route
 
+import java.text.SimpleDateFormat
+
 import nz.co.dav.imaging.config.ConfigurationService
 
 import org.apache.camel.ExchangePattern
@@ -32,8 +34,20 @@ class ImageProcessRoute extends RouteBuilder {
 	@Named("imageMetadataAggregationStrategy")
 	AggregationStrategy imageMetadataAggregationStrategy
 
+	@Inject
+	@Named("AWS.S3_BUCKET_NAME")
+	String awsS3Bucket
+
+	@Inject
+	@Named("AWS.SQS_EVENT_QUEUE_NAME")
+	String awsSqsEventQueueName
+
+	SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
+
 	@Override
 	public void configure() throws Exception {
+		String eventTime = DATE_FORMAT.format(new Date())
+		
 		from("direct:ImageProcess")
 				.routeId('ImageProcess')
 				.setExchangePattern(ExchangePattern.InOut)
@@ -44,8 +58,8 @@ class ImageProcessRoute extends RouteBuilder {
 				.split(simple('${body.images}'), imageMetadataAggregationStrategy).parallelProcessing().executorServiceRef("genericThreadPool")
 				.to("direct:singleImageProcess")
 				.end()
-				.setBody(simple('${property.metadataSet}'))
-				.marshal().json().end()
+				.multicast().parallelProcessing()
+				.to("direct:generateImgMetaJson").to("direct:sendImgEvent").end()
 
 		from("direct:singleImageProcess")
 				.process(imageMetadataRetrievingProcessor)
@@ -55,8 +69,22 @@ class ImageProcessRoute extends RouteBuilder {
 		from("direct:scalingImage")
 				.setProperty("imageInfo", simple('${body}'))
 				.split(simple('${property.scalingConfigs}'))
-				.process(imageScalingProcessor)
-				.to('aws-s3://' + configurationService.getAwsS3BucketName()+ '?amazonS3Client=#amazonS3')
+				.to("direct:singleScalingImage")
 				.end()
+
+		from("direct:singleScalingImage")
+				.process(imageScalingProcessor)
+				.setHeader("CamelAwsS3ContentType", constant("image/jpeg"))
+				.setHeader("CamelAwsS3ContentLength", simple('${property.imgStreamAvailable}'))
+				.setHeader("CamelAwsS3Key", simple('${property.outputPath}'))
+				.to("aws-s3://$awsS3Bucket?amazonS3Client=#amazonS3")
+
+		from("direct:generateImgMetaJson")
+				.setBody(simple('${property.metadataSet}'))
+				.marshal().json()
+
+		from("direct:sendImgEvent")
+				.setBody(simple('${property.tags}:'+eventTime))
+				.to("aws-sqs://$awsSqsEventQueueName?amazonSQSClient=#amazonSqs")
 	}
 }

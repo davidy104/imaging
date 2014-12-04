@@ -574,5 +574,6 @@
     <module>imaging-producer-integration</module>
     <module>imaging-producer-web</module>
     <module>imaging-producer-test</module>
+    <module>imaging-producer-service</module>
   </modules>
 </project>

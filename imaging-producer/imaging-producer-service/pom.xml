@@ -8,8 +8,9 @@
 		<artifactId>imaging-producer</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>imaging-producer-repository</artifactId>
-	<name>imaging-producer-repository</name>
+
+	<artifactId>imaging-producer-service</artifactId>
+	<name>imaging-producer-service</name>
 	<url>http://maven.apache.org</url>
 	<dependencies>
 		<dependency>
@@ -23,5 +24,4 @@
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
-
 </project>

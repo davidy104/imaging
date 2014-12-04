@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory
 
 @Slf4j
 class ImageScalingProcessor implements Processor {
+	
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		AbstractImageInfo imageInfo = exchange.getProperty("imageInfo", AbstractImageInfo.class)
@@ -61,9 +62,8 @@ class ImageScalingProcessor implements Processor {
 		} else {
 			outputPath = !s3Path.endsWith("/")?s3Path +"/"+fileName:s3Path+fileName
 		}
-
-		exchange.in.setHeader("CamelAwsS3ContentType", "image/jpeg")
-		exchange.in.setHeader("CamelAwsS3ContentLength", imgStreamAvailable)
-		exchange.in.setHeader("CamelAwsS3Key", outputPath)
+		
+		exchange.setProperty("imgStreamAvailable", imgStreamAvailable)
+		exchange.setProperty("outputPath", outputPath)
 	}
 }
