@@ -47,5 +47,4 @@ class ConfigurationServiceImpl implements ConfigurationService{
 		return awsS3Bucket
 	}
 
-
 }
