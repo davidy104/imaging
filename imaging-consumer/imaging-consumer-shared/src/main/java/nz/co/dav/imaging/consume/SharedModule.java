@@ -14,9 +14,13 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.sns.AmazonSNSClient;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClient;
+import com.google.common.eventbus.EventBus;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.filter.LoggingFilter;
 import com.sun.jersey.api.json.JSONConfiguration;
@@ -104,6 +108,13 @@ public class SharedModule extends AbstractModule {
 			}
 			return null;
 		}
+	}
+
+	@Provides
+	@Singleton
+	@Named("imageReceiveEventBus")
+	public EventBus imageReceiveEventBus() {
+		return new EventBus();
 	}
 
 }
