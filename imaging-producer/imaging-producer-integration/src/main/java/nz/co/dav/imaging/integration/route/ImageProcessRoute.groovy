@@ -58,8 +58,11 @@ class ImageProcessRoute extends RouteBuilder {
 				.split(simple('${body.images}'), imageMetadataAggregationStrategy).parallelProcessing().executorServiceRef("genericThreadPool")
 				.to("direct:singleImageProcess")
 				.end()
-				.multicast().parallelProcessing()
-				.to("direct:generateImgMetaJson").to("direct:sendImgEvent").end()
+				.to("direct:sendImgEvent")
+				.threads()
+				.executorServiceRef("genericThreadPool")
+				.to("direct:generateImgMetaJson")
+				.end()
 
 		from("direct:singleImageProcess")
 				.process(imageMetadataRetrievingProcessor)

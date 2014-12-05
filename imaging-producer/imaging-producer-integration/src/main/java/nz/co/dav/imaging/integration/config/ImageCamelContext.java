@@ -30,8 +30,8 @@ public class ImageCamelContext extends GuiceCamelContext {
 		ThreadPoolProfile profile = new ThreadPoolProfile();
 		profile.setId("genericThreadPool");
 		profile.setKeepAliveTime(120L);
-		profile.setPoolSize(2);
-		profile.setMaxPoolSize(10);
+		profile.setPoolSize(5);
+		profile.setMaxPoolSize(20);
 		profile.setTimeUnit(TimeUnit.SECONDS);
 		profile.setRejectedPolicy(ThreadPoolRejectedPolicy.Abort);
 		return profile;

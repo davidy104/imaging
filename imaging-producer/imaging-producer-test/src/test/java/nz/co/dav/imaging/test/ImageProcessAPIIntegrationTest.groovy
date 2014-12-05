@@ -52,7 +52,8 @@ class ImageProcessAPIIntegrationTest {
 	@Test
 	public void testProcessImage() {
 		FormDataMultiPart multiPart = new FormDataMultiPart()
-		multiPart.field("scalingConfig", "hello world")
+		multiPart.field("scalingConfig", "normal=1024*1024,stardand=1217*1217")
+		multiPart.field("tags", "office01")
 		
 		imagesMap.each{k,v->
 			final FormDataContentDisposition dispo = FormDataContentDisposition

@@ -17,7 +17,6 @@ import org.jolokia.jvmagent.JvmAgent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.sun.jersey.api.client.Client;
@@ -32,11 +31,10 @@ public class Bootstrap extends GuiceResteasyBootstrapServletContextListener {
 
 	@Override
 	protected void withInjector(Injector injector) {
-		final List<Module> modules = Lists.<Module> newArrayList();
-		modules.add(new ImageCamelContextModule());
-		modules.add(new SharedModule());
-		modules.add(new ImagingDSModule());
-		injector = injector.createChildInjector(modules);
+//		final List<Module> modules = Lists.<Module> newArrayList();
+//		modules.add(new ImageCamelContextModule());
+//		modules.add(new SharedModule());
+//		injector = injector.createChildInjector(modules);
 		try {
 			this.camelContext = injector.getInstance(CamelContext.class);
 			this.camelContext.start();
@@ -50,6 +48,9 @@ public class Bootstrap extends GuiceResteasyBootstrapServletContextListener {
 	protected List<? extends Module> getModules(final ServletContext context) {
 		JvmAgent.agentmain(null);
 		return Arrays.asList(new ConfigurationServiceModule(),
+				new SharedModule(),
+				new ImageCamelContextModule(),
+				new ImagingDSModule(),
 				new ResourceModule());
 	}
 

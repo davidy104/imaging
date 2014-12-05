@@ -49,11 +49,11 @@ public class ImagingResource {
 		}
 		log.info "scalingConfigString:{} $scalingConfig"
 		log.info "tags:{} $tags"
-		log.info "imageMap size:{} ${imageMap.size()}"
-
-		imageMap.keySet().each { log.info "imageName:{} $it" }
-
-		return Response.ok("Imaging API is available ...").type(MediaType.APPLICATION_JSON).build();
+		uploadForm.keySet().each {
+			log.info "field:{} $it"
+		}
+		String imgMetaJsonString = imagingProcessDS.process(scalingConfig, tags, imageMap)
+		return Response.ok(imgMetaJsonString).type(MediaType.APPLICATION_JSON).build();
 	}
 
 	@GET
