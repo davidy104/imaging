@@ -1,8 +1,11 @@
 package nz.co.dav.imaging.consume.integration;
 
 import nz.co.dav.imaging.consume.integration.config.ImageCamelContext;
+import nz.co.dav.imaging.consume.integration.processor.ImageEventMessageReceivingProcessor;
+import nz.co.dav.imaging.consume.integration.route.ImageReceivingRoute;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.guice.CamelModuleWithMatchingRoutes;
 import org.apache.camel.impl.ExplicitCamelContextNameStrategy;
 import org.apache.camel.impl.SimpleRegistry;
@@ -15,6 +18,9 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 
 public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 
@@ -22,6 +28,7 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 	protected void configureCamelContext() {
 		bind(CamelContext.class).to(ImageCamelContext.class).asEagerSingleton();
 		bind(Registry.class).toProvider(RegistryProvider.class);
+		bind(RouteBuilder.class).annotatedWith(Names.named("imageReceivingRoute")).to(ImageReceivingRoute.class).asEagerSingleton();
 	}
 
 	public static class RegistryProvider implements Provider<Registry> {
@@ -47,6 +54,13 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 	@Provides
 	public CamelContextNameStrategy camelContextNameStrategy() {
 		return new ExplicitCamelContextNameStrategy("ImageConsumer");
+	}
+
+	@Provides
+	@Singleton
+	@Named("imageEventMessageReceivingProcessor")
+	public ImageEventMessageReceivingProcessor imageEventMessageReceivingProcessor() {
+		return new ImageEventMessageReceivingProcessor();
 	}
 
 }

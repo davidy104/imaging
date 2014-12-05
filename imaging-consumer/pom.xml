@@ -563,5 +563,6 @@
     <module>imaging-consumer-integration</module>
     <module>imaging-consumer-test</module>
     <module>imaging-consumer-service</module>
+    <module>imaging-consumer-web</module>
   </modules>
 </project>
