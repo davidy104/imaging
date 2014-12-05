@@ -1,4 +1,4 @@
-package nz.co.dav.imaging.consume.integration;
+package nz.co.dav.imaging.consume.integration.config;
 
 import java.util.concurrent.TimeUnit;
 

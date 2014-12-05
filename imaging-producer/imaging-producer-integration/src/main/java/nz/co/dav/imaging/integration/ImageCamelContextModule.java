@@ -73,7 +73,7 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 
 	@Provides
 	public CamelContextNameStrategy camelContextNameStrategy() {
-		return new ExplicitCamelContextNameStrategy("Image");
+		return new ExplicitCamelContextNameStrategy("ImageProducer");
 	}
 
 	@Provides
