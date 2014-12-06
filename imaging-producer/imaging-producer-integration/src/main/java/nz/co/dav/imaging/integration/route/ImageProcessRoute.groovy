@@ -7,6 +7,7 @@ import nz.co.dav.imaging.integration.event.ImagesSentCompletedEvent
 import org.apache.camel.Exchange
 import org.apache.camel.ExchangePattern
 import org.apache.camel.Processor
+import org.apache.camel.ShutdownRunningTask
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.processor.aggregate.AggregationStrategy
 
@@ -58,22 +59,18 @@ class ImageProcessRoute extends RouteBuilder {
 
 		from("direct:ImageProcess")
 				.routeId('ImageProcess')
+				.shutdownRunningTask(ShutdownRunningTask.CompleteAllTasks)
 				.setExchangePattern(ExchangePattern.InOut)
 				.setProperty("scalingConfigs", simple('${body.scalingConfigs}'))
 				.setProperty("s3Path", simple('${body.s3Path}'))
 				.setProperty("tags", simple('${body.tags}'))
 				.setProperty("processTime", simple('${body.processTime}'))
+				.setProperty("totalCount", simple('${body.images.size()}'))
 				.split(simple('${body.images}'), imageMetadataAggregationStrategy)
 				.parallelProcessing().executorServiceRef("genericThreadPool")
 				.to("direct:singleImageProcess")
 				.end()
-				//				.threads()
-				//				.executorServiceRef("genericThreadPool")
-				.to("direct:generateImgMetaJson")
-				.end()
-
-		from("direct:singleImageProcess")
-				.onCompletion().onCompleteOnly()
+				.filter(simple('${property.currentCount} == ${property.totalCount}'))
 				.process(new Processor(){
 					@Override
 					public void process(Exchange exchange) throws Exception {
@@ -81,6 +78,13 @@ class ImageProcessRoute extends RouteBuilder {
 					}
 				})
 				.end()
+				//				.threads()
+				//				.executorServiceRef("genericThreadPool")
+				.to("direct:generateImgMetaJson")
+				.end()
+				
+
+		from("direct:singleImageProcess")
 				.process(imageMetadataRetrievingProcessor)
 				.wireTap("direct:scalingImage")
 				.executorServiceRef("genericThreadPool")

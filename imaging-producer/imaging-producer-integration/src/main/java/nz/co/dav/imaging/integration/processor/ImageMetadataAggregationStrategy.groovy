@@ -16,14 +16,15 @@ class ImageMetadataAggregationStrategy implements AggregationStrategy {
 	public Exchange aggregate(Exchange oldExchange,
 			Exchange newExchange) {
 		Set<Map<String,String>> metaSet
-		def totalImageCount
+		def currentCount
 		Map<String,String> imageMetaMap
-
+		
 		if (!oldExchange) {
-			newExchange.setProperty("totalImageCount", 1)
+			newExchange.setProperty("currentCount", 1)
 			return newExchange
 		}
-		totalImageCount = oldExchange.getProperty("totalImageCount")
+		
+		currentCount = oldExchange.getProperty("currentCount")
 		metaSet = oldExchange.getProperty("metadataSet", Set.class)
 		if(!metaSet){
 			metaSet = Sets.<Map<String,String>>newHashSet()
@@ -35,7 +36,7 @@ class ImageMetadataAggregationStrategy implements AggregationStrategy {
 
 		log.info "metaSet:{} $metaSet"
 
-		oldExchange.setProperty("totalImageCount", totalImageCount++)
+		oldExchange.setProperty("currentCount", currentCount++)
 		oldExchange.setProperty("metadataSet", metaSet)
 		return oldExchange
 	}
