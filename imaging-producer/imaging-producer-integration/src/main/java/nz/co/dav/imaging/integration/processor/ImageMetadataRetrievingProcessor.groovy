@@ -31,6 +31,7 @@ class ImageMetadataRetrievingProcessor implements Processor {
 		metadataMap.put("tags", tags)
 		metadataMap.put("name", tags)
 		metadataMap.put("processTime", tags)
+		log.info "metadataMap:{} $metadataMap"
 		exchange.setProperty("metadataMap", metadataMap)
 	}
 }

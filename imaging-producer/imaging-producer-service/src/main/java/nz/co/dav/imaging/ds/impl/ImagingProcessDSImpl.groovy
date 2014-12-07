@@ -34,9 +34,9 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 		log.info "tags:{} ${imageProcessRequest.tags}"
 		log.info "s3Path:{} ${imageProcessRequest.s3Path}"
 		log.info "processTime:{} ${imageProcessRequest.processTime}"
-		String response =  producerTemplate.requestBody(imageProcessRequest, String.class)
-		log.info "response:{} $response"
-		return response
+		Set<Map<String,String>> imageMetaData =  producerTemplate.requestBody(imageProcessRequest, Set.class)
+		log.info "imageMetaData:{} $imageMetaData"
+		return null
 	}
 
 	//normal=1024*1024,stardand=1217*1217

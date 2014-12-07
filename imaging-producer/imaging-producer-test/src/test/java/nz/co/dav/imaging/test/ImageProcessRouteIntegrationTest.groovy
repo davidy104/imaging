@@ -63,8 +63,8 @@ class ImageProcessRouteIntegrationTest {
 
 	@Test
 	public void testRoute() {
-		String response = producerTemplate.requestBody(request, String.class)
-		log.info "response:{} $response"
+		Set<Map<String,String>> imageMetaSet = producerTemplate.requestBody(request, Set.class)
+		log.info "imageMetaSet:{} $imageMetaSet"
 		Thread.sleep(20000)
 	}
 }

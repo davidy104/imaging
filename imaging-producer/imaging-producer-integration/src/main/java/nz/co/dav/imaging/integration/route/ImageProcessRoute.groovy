@@ -1,5 +1,7 @@
 package nz.co.dav.imaging.integration.route
 
+import java.text.SimpleDateFormat
+
 import nz.co.dav.imaging.config.ConfigurationService
 
 import org.apache.camel.ExchangePattern
@@ -35,10 +37,6 @@ class ImageProcessRoute extends RouteBuilder {
 	AggregationStrategy imageMetadataAggregationStrategy
 
 	@Inject
-	@Named("imageScalingAggregationStrategy")
-	AggregationStrategy imageScalingAggregationStrategy
-
-	@Inject
 	@Named("AWS.S3_BUCKET_NAME")
 	String awsS3Bucket
 
@@ -46,28 +44,27 @@ class ImageProcessRoute extends RouteBuilder {
 	@Named("AWS.SQS_EVENT_QUEUE_NAME")
 	String awsSqsEventQueueName
 
-	@Inject
-	@Named("imageSendEventBus")
-	final EventBus imageSendEventBus
-
+	SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
 
 	@Override
 	public void configure() throws Exception {
+		String eventTime = DATE_FORMAT.format(new Date())
 
 		from("direct:ImageProcess")
 				.routeId('ImageProcess')
-				.shutdownRunningTask(ShutdownRunningTask.CompleteAllTasks)
 				.setExchangePattern(ExchangePattern.InOut)
 				.setProperty("scalingConfigs", simple('${body.scalingConfigs}'))
 				.setProperty("s3Path", simple('${body.s3Path}'))
 				.setProperty("tags", simple('${body.tags}'))
 				.setProperty("processTime", simple('${body.processTime}'))
-				.setProperty("totalCount", simple('${body.images.size()}'))
 				.split(simple('${body.images}'), imageMetadataAggregationStrategy)
 				.parallelProcessing().executorServiceRef("genericThreadPool")
 				.to("direct:singleImageProcess")
 				.end()
-				.to("direct:generateImgMetaJson")
+				.to("direct:sendImgEvent")
+				.threads()
+				.executorServiceRef("genericThreadPool")
+				.setBody(simple('${property.metadataSet}'))
 				.end()
 
 		from("direct:singleImageProcess")
@@ -77,7 +74,7 @@ class ImageProcessRoute extends RouteBuilder {
 
 		from("direct:scalingImage")
 				.setProperty("imageInfo", simple('${body}'))
-				.split(simple('${property.scalingConfigs}'),imageScalingAggregationStrategy)
+				.split(simple('${property.scalingConfigs}'))
 				.to("direct:singleScalingImage")
 				.end()
 
@@ -88,13 +85,8 @@ class ImageProcessRoute extends RouteBuilder {
 				.setHeader("CamelAwsS3Key", simple('${property.outputPath}'))
 				.to("aws-s3://$awsS3Bucket?amazonS3Client=#amazonS3")
 
-
-		from("direct:generateImgMetaJson")
-				.setBody(simple('${property.metadataSet}'))
-				.marshal().json()
-
 		from("direct:sendImgEvent")
-				.setBody(simple('${property.scalingFilesMessage}'))
+				.setBody(simple('${property.tags}:'+eventTime))
 				.to("aws-sqs://$awsSqsEventQueueName?amazonSQSClient=#amazonSqs")
 	}
 }
