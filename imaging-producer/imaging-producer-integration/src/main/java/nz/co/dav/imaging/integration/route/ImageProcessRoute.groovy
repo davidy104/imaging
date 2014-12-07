@@ -1,10 +1,7 @@
 package nz.co.dav.imaging.integration.route
 
 import nz.co.dav.imaging.config.ConfigurationService
-import nz.co.dav.imaging.integration.event.ImageSentToS3Event
-import nz.co.dav.imaging.integration.event.ImagesSentCompletedEvent
 
-import org.apache.camel.Exchange
 import org.apache.camel.ExchangePattern
 import org.apache.camel.Processor
 import org.apache.camel.ShutdownRunningTask
@@ -70,19 +67,8 @@ class ImageProcessRoute extends RouteBuilder {
 				.parallelProcessing().executorServiceRef("genericThreadPool")
 				.to("direct:singleImageProcess")
 				.end()
-				.filter(simple('${property.currentCount} == ${property.totalCount}'))
-				.process(new Processor(){
-					@Override
-					public void process(Exchange exchange) throws Exception {
-						imageSendEventBus.post(new ImagesSentCompletedEvent(sqsEventQueueName:awsSqsEventQueueName))
-					}
-				})
-				.end()
-				//				.threads()
-				//				.executorServiceRef("genericThreadPool")
 				.to("direct:generateImgMetaJson")
 				.end()
-				
 
 		from("direct:singleImageProcess")
 				.process(imageMetadataRetrievingProcessor)
@@ -94,13 +80,6 @@ class ImageProcessRoute extends RouteBuilder {
 				.split(simple('${property.scalingConfigs}'),imageScalingAggregationStrategy)
 				.to("direct:singleScalingImage")
 				.end()
-				.process(new Processor(){
-					@Override
-					public void process(Exchange exchange) throws Exception {
-						def s3Key = exchange.getProperty("scalingFilesMessage")
-						imageSendEventBus.post(new ImageSentToS3Event(s3Key:s3Key))
-					}
-				})
 
 		from("direct:singleScalingImage")
 				.process(imageScalingProcessor)
@@ -114,8 +93,8 @@ class ImageProcessRoute extends RouteBuilder {
 				.setBody(simple('${property.metadataSet}'))
 				.marshal().json()
 
-		//		from("direct:sendImgEvent")
-		//				.setBody(simple('${property.scalingFilesMessage}'))
-		//				.to("aws-sqs://$awsSqsEventQueueName?amazonSQSClient=#amazonSqs")
+		from("direct:sendImgEvent")
+				.setBody(simple('${property.scalingFilesMessage}'))
+				.to("aws-sqs://$awsSqsEventQueueName?amazonSQSClient=#amazonSqs")
 	}
 }
