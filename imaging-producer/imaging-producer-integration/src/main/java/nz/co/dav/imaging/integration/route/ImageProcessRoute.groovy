@@ -6,18 +6,15 @@ import nz.co.dav.imaging.config.ConfigurationService
 
 import org.apache.camel.ExchangePattern
 import org.apache.camel.Processor
-import org.apache.camel.ShutdownRunningTask
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.processor.aggregate.AggregationStrategy
 
-import com.google.common.eventbus.EventBus
 import com.google.inject.Inject
 import com.google.inject.name.Named
 
 /**
  * com.amazonaws.services.s3.model.AmazonS3Exception
  * @author Davidy
- *
  */
 class ImageProcessRoute extends RouteBuilder {
 
