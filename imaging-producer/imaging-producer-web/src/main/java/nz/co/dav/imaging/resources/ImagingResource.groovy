@@ -49,9 +49,7 @@ public class ImagingResource {
 		}
 		log.info "scalingConfigString:{} $scalingConfig"
 		log.info "tags:{} $tags"
-		uploadForm.keySet().each {
-			log.info "field:{} $it"
-		}
+		uploadForm.keySet().each { log.info "field:{} $it" }
 		String imgMetaJsonString = imagingProcessDS.process(scalingConfig, tags, imageMap)
 		return Response.ok(imgMetaJsonString).type(MediaType.APPLICATION_JSON).build();
 	}

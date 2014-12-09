@@ -43,9 +43,6 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 			imageProcessRequest.images << this.buildAbstractImage(k, v)
 		}
 		imageProcessRequest.scalingConfigs = this.buildScalingConfigMap(scalingConfig)
-		log.info "tags:{} ${imageProcessRequest.tags}"
-		log.info "s3Path:{} ${imageProcessRequest.s3Path}"
-		log.info "processTime:{} ${imageProcessRequest.processTime}"
 		Set<Map<String,String>> imageMetaData =  producerTemplate.requestBody(imageProcessRequest, Set.class)
 
 		jsonBuilder{
