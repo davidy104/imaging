@@ -12,17 +12,22 @@ import nz.co.dav.imaging.repository.convert.CypherInPredicateConverter;
 import nz.co.dav.imaging.repository.convert.CypherTransactionalAPIRestSingleTypeRespConverter;
 import nz.co.dav.imaging.repository.convert.CypherUpdateStatementReqConverter;
 import nz.co.dav.imaging.repository.convert.ImageMetaMapToModelConverter;
+import nz.co.dav.imaging.repository.convert.ImageModelToMetaMapForCreationConverter;
 import nz.co.dav.imaging.repository.convert.Neo4jAPIErrorRespConverter;
 import nz.co.dav.imaging.repository.convert.Neo4jRestAPIRespJsonConverter;
 import nz.co.dav.imaging.repository.convert.NodeAPIRespConverter;
 import nz.co.dav.imaging.repository.convert.RelationshipQueryRespConverter;
 import nz.co.dav.imaging.repository.convert.RelationshipsQueryRespConverter;
+import nz.co.dav.imaging.repository.event.ImageMetaDataPersistEventHandler;
 import nz.co.dav.imaging.repository.impl.ImagingMetaDataRepositoryImpl;
 import nz.co.dav.imaging.repository.support.AbstractCypherQueryResult;
 import nz.co.dav.imaging.repository.support.Neo4jRestAPIAccessor;
 
 import com.google.common.base.Function;
+import com.google.common.eventbus.EventBus;
 import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -34,6 +39,28 @@ public class ImagingRepositoryModule extends AbstractModule {
 		bind(Neo4jRestAPIRespJsonConverter.class).asEagerSingleton();
 		bind(Neo4jRestAPIAccessor.class).asEagerSingleton();
 		bind(ImagingMetaDataRepository.class).to(ImagingMetaDataRepositoryImpl.class).asEagerSingleton();
+		bind(ImageMetaDataPersistEventHandler.class).toProvider(
+				ImageMetaDataPersistEventHandlerProvider.class).asEagerSingleton();
+	}
+
+	public static class ImageMetaDataPersistEventHandlerProvider implements
+			Provider<ImageMetaDataPersistEventHandler> {
+
+		@Inject
+		@Named("imageMetaDataPersistEventBus")
+		EventBus imageMetaDataPersistEventBus;
+
+		@Inject
+		ImagingMetaDataRepository imagingMetaDataRepository;
+
+		@Inject
+		@Named("jsonSlurper")
+		JsonSlurper jsonSlurper;
+
+		@Override
+		public ImageMetaDataPersistEventHandler get() {
+			return new ImageMetaDataPersistEventHandler(imageMetaDataPersistEventBus, imagingMetaDataRepository, jsonSlurper);
+		}
 	}
 
 	@Provides
@@ -96,6 +123,13 @@ public class ImagingRepositoryModule extends AbstractModule {
 	@Named("cypherCreateStatmentReqConverter")
 	public Function<Map<String, Object>, String> cypherCreateStatmentReqConverter() {
 		return new CypherCreateStatementReqConverter();
+	}
+
+	@Provides
+	@Singleton
+	@Named("imageModelToMetaMapForCreationConverter")
+	public Function<ImageMetaModel, Function<Map<String, Object>, String>> imageModelToMetaMapForCreationConverter(final @Named("cypherCreateStatmentReqConverter") Function<Map<String, Object>, String> cypherCreateStatmentReqConverter) {
+		return new ImageModelToMetaMapForCreationConverter(cypherCreateStatmentReqConverter);
 	}
 
 	@Provides

@@ -3,7 +3,9 @@ package nz.co.dav.imaging.integration.route
 import java.text.SimpleDateFormat
 
 import nz.co.dav.imaging.config.ConfigurationService
+import nz.co.dav.imaging.event.ImageMetaDataPersistEvent
 
+import org.apache.camel.Exchange
 import org.apache.camel.ExchangePattern
 import org.apache.camel.Processor
 import org.apache.camel.builder.RouteBuilder
@@ -58,7 +60,7 @@ class ImageProcessRoute extends RouteBuilder {
 				.setExchangePattern(ExchangePattern.InOut)
 				.setProperty("scalingConfigs", simple('${body.scalingConfigs}'))
 				.setProperty("s3Path", simple('${body.s3Path}'))
-				.setProperty("tags", simple('${body.tags}'))
+				.setProperty("tag", simple('${body.tags}'))
 				.setProperty("processTime", simple('${body.processTime}'))
 				.split(simple('${body.images}'), imageMetadataAggregationStrategy)
 				.parallelProcessing().executorServiceRef("genericThreadPool")
@@ -69,6 +71,15 @@ class ImageProcessRoute extends RouteBuilder {
 				.executorServiceRef("genericThreadPool")
 				.setBody(simple('${property.metadataSet}'))
 				.marshal().json(JsonLibrary.Jackson)
+				.threads()
+				.executorServiceRef("genericThreadPool")
+				.process(new Processor(){
+					@Override
+					public void process(final Exchange exchange) throws Exception {
+						String imageMetaJson = exchange.getIn().getBody(String.class)
+						imageMetaDataPersistEventBus.post(new ImageMetaDataPersistEvent(imageMataDataJson:imageMetaJson))
+					}
+				})
 				.end()
 
 		from("direct:singleImageProcess")

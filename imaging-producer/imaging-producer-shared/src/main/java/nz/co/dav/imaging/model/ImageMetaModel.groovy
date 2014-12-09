@@ -8,6 +8,6 @@ import groovy.transform.ToString
 class ImageMetaModel {
 	String tag
 	String name
-	Date createTime
-	Map<String,String> meta = [:]
+	String createTime
+	String meta
 }

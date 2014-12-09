@@ -24,7 +24,7 @@ class Neo4jRepositoryBase implements GeneralNeo4jRepository {
 
 	@Inject
 	Neo4jRestAPIAccessor neo4jRestAPIAccessor
-
+	
 	@Inject
 	@Named("cypherCreateStatmentReqConverter")
 	Function<Map<String,Object>, String> cypherCreateStatmentReqConverter

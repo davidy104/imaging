@@ -15,7 +15,7 @@ class ImageMetadataRetrievingProcessor implements Processor {
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		AbstractImageInfo imageInfo = exchange.getIn().getBody(AbstractImageInfo.class)
-		String tags = exchange.getProperty("tags", String.class)
+		String tag = exchange.getProperty("tag", String.class)
 		String processTime = exchange.getProperty("processTime", String.class)
 		String name = imageInfo.imageName
 
@@ -30,7 +30,7 @@ class ImageMetadataRetrievingProcessor implements Processor {
 				metadataMap.put(originalKeyword, item.text)
 			}
 		}
-		metadataMap.put("tags", tags)
+		metadataMap.put("tag", tag)
 		metadataMap.put("name", name)
 		metadataMap.put("processTime", processTime)
 		log.info "metadataMap:{} $metadataMap"

@@ -1,7 +1,6 @@
 package nz.co.dav.imaging.integration;
 
 import nz.co.dav.imaging.integration.config.ImageCamelContext;
-import nz.co.dav.imaging.integration.event.ImageS3SendEventHandler;
 import nz.co.dav.imaging.integration.processor.ImageMetadataAggregationStrategy;
 import nz.co.dav.imaging.integration.processor.ImageMetadataRetrievingProcessor;
 import nz.co.dav.imaging.integration.processor.ImageScalingAggregationStrategy;
@@ -21,7 +20,6 @@ import org.apache.camel.spi.Registry;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.sns.AmazonSNSClient;
 import com.amazonaws.services.sqs.AmazonSQS;
-import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
@@ -35,8 +33,6 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 	protected void configureCamelContext() {
 		bind(CamelContext.class).to(ImageCamelContext.class).asEagerSingleton();
 		bind(Registry.class).toProvider(RegistryProvider.class);
-		bind(ImageS3SendEventHandler.class).toProvider(
-				ImageS3SendEventHandlerProvider.class).asEagerSingleton();
 		// bind(ImageEventConsumer.class).toProvider(ImageEventConsumerProvider.class).asEagerSingleton();
 		bind(Processor.class)
 				.annotatedWith(Names.named("imageMetadataRetrievingProcessor"))
@@ -44,20 +40,6 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 		bind(RouteBuilder.class)
 				.annotatedWith(Names.named("imageProcessRoute"))
 				.to(ImageProcessRoute.class).asEagerSingleton();
-	}
-
-	public static class ImageS3SendEventHandlerProvider implements
-			Provider<ImageS3SendEventHandler> {
-
-		@Inject
-		@Named("imageSendEventBus")
-		EventBus imageSendEventBus;
-
-		@Override
-		public ImageS3SendEventHandler get() {
-			return new ImageS3SendEventHandler(imageSendEventBus);
-		}
-
 	}
 
 	public static class RegistryProvider implements Provider<Registry> {
