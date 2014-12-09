@@ -6,6 +6,7 @@ import javax.ws.rs.Consumes
 import javax.ws.rs.GET
 import javax.ws.rs.POST
 import javax.ws.rs.Path
+import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.MultivaluedMap
@@ -57,6 +58,14 @@ public class ImagingResource {
 	@GET
 	Response doGet() {
 		return Response.ok("Imaging API is available ...").type(MediaType.TEXT_PLAIN).build()
+	}
+
+	@GET
+	@Path("/{tag}/{name}")
+	@Produces("application/json")
+	Response getImageMeta(
+			@PathParam("tag") String tag,@PathParam("name") String name) {
+			
 	}
 
 	byte[] getImageBytes(final InputPart inputPart){
