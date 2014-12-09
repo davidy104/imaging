@@ -43,24 +43,30 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 			imageProcessRequest.images << this.buildAbstractImage(k, v)
 		}
 		imageProcessRequest.scalingConfigs = this.buildScalingConfigMap(scalingConfig)
-		Set<Map<String,String>> imageMetaData =  producerTemplate.requestBody(imageProcessRequest, Set.class)
+		String imageMetaData =  producerTemplate.requestBody(imageProcessRequest, String.class)
 
-		jsonBuilder{
-			imageMetaData.each {
-				imageMeta(
-						it.each {k,v->
-							k: v
-						}
-						)
-			}
-		}
 		
-		imageMetaData.each {
-			Map<String,String> filteredMap = this.filterMetaData(it)
-			log.info "filteredMap:{} ${filteredMap}"
-			imagingMetaDataRepository.createImageMetaData(filteredMap)
-		}
-		return jsonBuilder.toString()
+		log.info "imageMetaData:{} $imageMetaData"
+		
+//		Set<Map<String,String>> imageMetaData =  producerTemplate.requestBody(imageProcessRequest, Set.class)
+
+//		jsonBuilder{
+//			imageMetaData.each {
+//				imageMeta(
+//						it.each {k,v->
+//							k: v
+//						}
+//						)
+//			}
+//		}
+//		
+//		imageMetaData.each {
+//			Map<String,String> filteredMap = this.filterMetaData(it)
+//			log.info "filteredMap:{} ${filteredMap}"
+//			imagingMetaDataRepository.createImageMetaData(filteredMap)
+//		}
+//		return jsonBuilder.toString()
+		return imageMetaData
 	}
 
 	//normal=1024*1024,stardand=1217*1217

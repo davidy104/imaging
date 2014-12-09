@@ -9,6 +9,7 @@ import javax.ws.rs.core.MediaType
 import nz.co.dav.imaging.SharedModule
 import nz.co.dav.imaging.config.ConfigurationServiceModule
 import nz.co.dav.imaging.integration.ImageCamelContextModule
+import nz.co.dav.imaging.repository.ImagingRepositoryModule
 import nz.co.dav.imaging.test.GuiceJUnitRunner.GuiceModules
 
 import org.junit.Before
@@ -24,7 +25,7 @@ import com.sun.jersey.multipart.FormDataBodyPart
 import com.sun.jersey.multipart.FormDataMultiPart
 
 @RunWith(GuiceJUnitRunner.class)
-@GuiceModules([ConfigurationServiceModule.class, SharedModule.class, ImageCamelContextModule.class ])
+@GuiceModules([ConfigurationServiceModule.class, SharedModule.class, ImageCamelContextModule.class,ImagingRepositoryModule.class ])
 @Slf4j
 class ImageProcessAPIIntegrationTest {
 
@@ -52,7 +53,7 @@ class ImageProcessAPIIntegrationTest {
 	@Test
 	public void testProcessImage() {
 		FormDataMultiPart multiPart = new FormDataMultiPart()
-		multiPart.field("scalingConfig", "normal=1024*1024,stardand=1217*1217")
+		multiPart.field("scalingConfig", "normal=1024*1024,thumbnail=1217*1217")
 		multiPart.field("tags", "office01")
 		
 		imagesMap.each{k,v->

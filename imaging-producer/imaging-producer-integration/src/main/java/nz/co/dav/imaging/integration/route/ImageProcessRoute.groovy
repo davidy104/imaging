@@ -7,8 +7,10 @@ import nz.co.dav.imaging.config.ConfigurationService
 import org.apache.camel.ExchangePattern
 import org.apache.camel.Processor
 import org.apache.camel.builder.RouteBuilder
+import org.apache.camel.model.dataformat.JsonLibrary
 import org.apache.camel.processor.aggregate.AggregationStrategy
 
+import com.google.common.eventbus.EventBus
 import com.google.inject.Inject
 import com.google.inject.name.Named
 
@@ -41,6 +43,10 @@ class ImageProcessRoute extends RouteBuilder {
 	@Named("AWS.SQS_EVENT_QUEUE_NAME")
 	String awsSqsEventQueueName
 
+	@Inject
+	@Named("imageMetaDataPersistEventBus")
+	EventBus imageMetaDataPersistEventBus
+
 	SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
 
 	@Override
@@ -62,6 +68,7 @@ class ImageProcessRoute extends RouteBuilder {
 				.threads()
 				.executorServiceRef("genericThreadPool")
 				.setBody(simple('${property.metadataSet}'))
+				.marshal().json(JsonLibrary.Jackson)
 				.end()
 
 		from("direct:singleImageProcess")

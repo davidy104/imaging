@@ -11,9 +11,4 @@ public class ImagingDSModule extends AbstractModule {
 		bind(ImagingProcessDS.class).to(ImagingProcessDSImpl.class).asEagerSingleton();
 	}
 
-	// @Provides
-	// @Singleton
-	// public ImagingProcessDS imagingProcessDS() {
-	// return new ImagingProcessDSImpl();
-	// }
 }

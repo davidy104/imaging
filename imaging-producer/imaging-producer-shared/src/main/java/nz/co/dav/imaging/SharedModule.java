@@ -41,8 +41,8 @@ public class SharedModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	@Named("imageSendEventBus")
-	public EventBus imageSendEventBus() {
+	@Named("imageMetaDataPersistEventBus")
+	public EventBus imageMetaDataPersistEventBus() {
 		return new EventBus();
 	}
 
