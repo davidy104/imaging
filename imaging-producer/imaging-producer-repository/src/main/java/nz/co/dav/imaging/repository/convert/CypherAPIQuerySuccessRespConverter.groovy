@@ -7,14 +7,16 @@ import nz.co.dav.imaging.repository.support.AbstractCypherQueryNode
 import nz.co.dav.imaging.repository.support.AbstractCypherQueryResult
 
 import com.google.common.base.Function
-import com.google.inject.Inject
 
 @Slf4j
 class CypherAPIQuerySuccessRespConverter implements Function<String, AbstractCypherQueryResult> {
-	@Inject
 	JsonSlurper jsonSlurper
 
 	String distinctColumn
+	
+	public CypherAPIQuerySuccessRespConverter(final JsonSlurper jsonSlurper) {
+		this.jsonSlurper = jsonSlurper;
+	}
 
 	AbstractCypherQueryResult apply(final String jsonInput,final String distinctColumn){
 		this.distinctColumn = distinctColumn

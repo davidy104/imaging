@@ -8,9 +8,6 @@ import groovy.util.logging.Slf4j
 import javax.ws.rs.core.Response.Status
 
 import nz.co.dav.imaging.NotFoundException
-import nz.co.dav.imaging.repository.convert.CypherCreateStatementReqConverter
-import nz.co.dav.imaging.repository.convert.CypherInPredicateConverter
-import nz.co.dav.imaging.repository.convert.CypherUpdateStatementReqConverter
 import nz.co.dav.imaging.repository.support.AbstractCypherQueryResult
 import nz.co.dav.imaging.repository.support.Neo4jRestAPIAccessor
 import nz.co.dav.imaging.repository.support.Neo4jRestAPIAccessor.RelationshipDirection
@@ -30,15 +27,15 @@ class Neo4jRepositoryBase implements GeneralNeo4jRepository {
 
 	@Inject
 	@Named("cypherCreateStatmentReqConverter")
-	CypherCreateStatementReqConverter cypherCreateStatmentReqConverter
+	Function<Map<String,Object>, String> cypherCreateStatmentReqConverter
 
 	@Inject
 	@Named("cypherUpdateStatementReqConverter")
-	CypherUpdateStatementReqConverter cypherUpdateStatementReqConverter
+	Function<Map<String, String>, String> cypherUpdateStatementReqConverter
 
 	@Inject
 	@Named("cypherInPredicateConverter")
-	CypherInPredicateConverter cypherInPredicateConverter
+	Function<Set<String>, String> cypherInPredicateConverter
 
 	@Override
 	Object customCypherQuery(final String queryJson,final int expectedStatusCode, final Function<String,?> converter) {
@@ -107,5 +104,4 @@ class Neo4jRepositoryBase implements GeneralNeo4jRepository {
 		}
 		neo4jRestAPIAccessor.deleteRelationship(relationshipUri)
 	}
-
 }

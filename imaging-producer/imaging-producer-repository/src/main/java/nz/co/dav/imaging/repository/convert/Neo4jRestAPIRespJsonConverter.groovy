@@ -4,6 +4,7 @@ import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import nz.co.dav.imaging.repository.support.AbstractCypherQueryResult
 
+import com.google.common.base.Function
 import com.google.inject.Inject
 import com.google.inject.name.Named
 
@@ -15,31 +16,31 @@ class Neo4jRestAPIRespJsonConverter {
 
 	@Inject
 	@Named("nodeAPIRespConverter")
-	NodeAPIRespConverter nodeAPIRespConverter
+	Function<String, Map<String, String>> nodeAPIRespConverter
 
 	@Inject
 	@Named("relationshipsQueryRespConverter")
-	RelationshipsQueryRespConverter relationshipsQueryRespConverter
+	Function<String, Map<String, Map<String, String>>> relationshipsQueryRespConverter
 
 	@Inject
 	@Named("cypherTransactionalAPIRestSingleTypeRespConverter")
-	CypherTransactionalAPIRestSingleTypeRespConverter cypherTransactionalAPIRestSingleTypeRespConverter
+	Function<String, Map<String, Map<String, String>>> cypherTransactionalAPIRestSingleTypeRespConverter
 
 	@Inject
 	@Named("relationshipQueryRespConverter")
-	RelationshipQueryRespConverter relationshipQueryRespConverter
+	Function<String, Map<String, Object>> relationshipQueryRespConverter
 
 	@Inject
 	@Named("cypherAPIQuerySuccessRespConverter")
-	CypherAPIQuerySuccessRespConverter cypherAPIQuerySuccessRespConverter
+	Function<String, AbstractCypherQueryResult> cypherAPIQuerySuccessRespConverter
 
 	@Inject
 	@Named("cypherUpdateStatementReqConverter")
-	CypherUpdateStatementReqConverter cypherUpdateStatementReqConverter
+	Function<Map<String, String>, String> cypherUpdateStatementReqConverter
 
 	@Inject
 	@Named("neo4jAPIErrorRespConverter")
-	Neo4jAPIErrorRespConverter neo4jAPIErrorRespConverter
+	Function<String, String> neo4jAPIErrorRespConverter
 
 	String getCypherUpdateStatementRequest(final Map<String,String> inputMap){
 		return cypherUpdateStatementReqConverter.apply(inputMap)

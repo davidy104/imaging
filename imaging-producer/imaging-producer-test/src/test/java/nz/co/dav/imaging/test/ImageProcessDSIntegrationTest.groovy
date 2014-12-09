@@ -7,6 +7,7 @@ import nz.co.dav.imaging.config.ConfigurationServiceModule
 import nz.co.dav.imaging.ds.ImagingDSModule
 import nz.co.dav.imaging.ds.ImagingProcessDS
 import nz.co.dav.imaging.integration.ImageCamelContextModule
+import nz.co.dav.imaging.repository.ImagingRepositoryModule
 import nz.co.dav.imaging.test.GuiceJUnitRunner.GuiceModules
 
 import org.apache.camel.CamelContext
@@ -18,13 +19,13 @@ import org.junit.runner.RunWith
 import com.google.common.io.Resources
 import com.google.inject.Inject
 @RunWith(GuiceJUnitRunner.class)
-@GuiceModules([ConfigurationServiceModule.class, SharedModule.class, ImageCamelContextModule.class,ImagingDSModule.class ])
+@GuiceModules([ConfigurationServiceModule.class, SharedModule.class, ImageCamelContextModule.class,ImagingDSModule.class,ImagingRepositoryModule.class ])
 @Slf4j
 class ImageProcessDSIntegrationTest {
 
 	@Inject
 	ImagingProcessDS imagingProcessDS
-	
+
 	@Inject
 	CamelContext camelContext
 
@@ -40,7 +41,7 @@ class ImageProcessDSIntegrationTest {
 		}
 		camelContext.start()
 	}
-	
+
 	@After
 	void tearDown(){
 		camelContext.stop()

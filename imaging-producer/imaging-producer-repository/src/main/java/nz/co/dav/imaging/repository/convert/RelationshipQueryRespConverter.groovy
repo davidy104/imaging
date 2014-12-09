@@ -4,13 +4,16 @@ import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 
 import com.google.common.base.Function
-import com.google.inject.Inject
 
 @Slf4j
 class RelationshipQueryRespConverter implements Function<String, Map<String,Object>> {
 
-	@Inject
 	JsonSlurper jsonSlurper
+
+	public RelationshipQueryRespConverter(JsonSlurper jsonSlurper) {
+		this.jsonSlurper = jsonSlurper;
+	}
+
 
 	@Override
 	Map<String, Object> apply(final String jsonResp) {

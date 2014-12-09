@@ -4,7 +4,6 @@ import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 
 import com.google.common.base.Function
-import com.google.inject.Inject
 /**
  * 
  * @author Davidy
@@ -13,11 +12,15 @@ import com.google.inject.Inject
 @Slf4j
 class CypherTransactionalAPIRestSingleTypeRespConverter implements Function<String,Map<String,Map<String,String>>> {
 
-	@Inject
 	JsonSlurper jsonSlurper
+
+	public CypherTransactionalAPIRestSingleTypeRespConverter(final JsonSlurper jsonSlurper) {
+		this.jsonSlurper = jsonSlurper;
+	}
 
 	@Override
 	Map<String,Map<String,String>> apply(final String jsonInput) {
+		log.info "CypherTransactionalAPIRestSingleTypeRespConverter start:{} $jsonInput"
 		Map<String,Map<String,String>> resultMap = [:]
 		Map respMap = (Map)jsonSlurper.parseText(jsonInput)
 		List errorList = (ArrayList)respMap.get('errors')

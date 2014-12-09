@@ -4,13 +4,15 @@ import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 
 import com.google.common.base.Function
-import com.google.inject.Inject
 
 @Slf4j
 class NodeAPIRespConverter implements Function<String, Map<String,String>> {
 
-	@Inject
 	JsonSlurper jsonSlurper
+
+	public NodeAPIRespConverter(final JsonSlurper jsonSlurper) {
+		this.jsonSlurper = jsonSlurper;
+	}
 
 	@Override
 	Map<String, String> apply(String jsonInput) {

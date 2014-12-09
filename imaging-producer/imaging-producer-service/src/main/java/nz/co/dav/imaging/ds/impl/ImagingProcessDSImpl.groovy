@@ -7,11 +7,13 @@ import java.text.SimpleDateFormat
 import nz.co.dav.imaging.ds.ImagingProcessDS
 import nz.co.dav.imaging.model.AbstractImageInfo
 import nz.co.dav.imaging.model.ImageProcessRequest
+import nz.co.dav.imaging.repository.ImagingMetaDataRepository
 
 import org.apache.camel.Produce
 import org.apache.camel.ProducerTemplate
 
 import com.google.common.base.Splitter
+import com.google.inject.Inject
 
 @Slf4j
 class ImagingProcessDSImpl implements ImagingProcessDS {
@@ -22,10 +24,14 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 	static final String S3_IMG_PATH = 'image'
 
 	SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
+	
+	@Inject
+	ImagingMetaDataRepository imagingMetaDataRepository
 
 	@Override
 	String process(final String scalingConfig,final String tags, final Map<String, byte[]> imagesMap) {
 		String processTime = DATE_FORMAT.format(new Date())
+		log.info "processTime:{} $processTime"
 		ImageProcessRequest imageProcessRequest = new ImageProcessRequest(s3Path:S3_IMG_PATH,tags:tags,processTime:processTime)
 		imagesMap.each {k,v->
 			imageProcessRequest.images << this.buildAbstractImage(k, v)
@@ -35,7 +41,9 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 		log.info "s3Path:{} ${imageProcessRequest.s3Path}"
 		log.info "processTime:{} ${imageProcessRequest.processTime}"
 		Set<Map<String,String>> imageMetaData =  producerTemplate.requestBody(imageProcessRequest, Set.class)
-		log.info "imageMetaData:{} $imageMetaData"
+		imageMetaData.each {
+			imagingMetaDataRepository.createImageMetaData(it)
+		}
 		return null
 	}
 
