@@ -25,7 +25,9 @@ class ImageMetadataRetrievingProcessor implements Processor {
 		if(metadata) {
 			metadata.getItems().each{
 				Item item = (Item)it
-				metadataMap.put(item.keyword, item.text)
+				def originalKeyword = item.keyword
+				originalKeyword = originalKeyword.replaceAll("\\s", "")
+				metadataMap.put(originalKeyword, item.text)
 			}
 		}
 		metadataMap.put("tags", tags)

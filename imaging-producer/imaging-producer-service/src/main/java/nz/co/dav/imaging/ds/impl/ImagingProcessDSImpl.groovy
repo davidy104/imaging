@@ -1,5 +1,6 @@
 package nz.co.dav.imaging.ds.impl;
 
+import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
 
 import java.text.SimpleDateFormat
@@ -12,7 +13,9 @@ import nz.co.dav.imaging.repository.ImagingMetaDataRepository
 import org.apache.camel.Produce
 import org.apache.camel.ProducerTemplate
 
+import com.google.common.base.Predicate
 import com.google.common.base.Splitter
+import com.google.common.collect.Maps
 import com.google.inject.Inject
 
 @Slf4j
@@ -24,9 +27,12 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 	static final String S3_IMG_PATH = 'image'
 
 	SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
-	
+
 	@Inject
 	ImagingMetaDataRepository imagingMetaDataRepository
+
+	@Inject
+	JsonBuilder jsonBuilder
 
 	@Override
 	String process(final String scalingConfig,final String tags, final Map<String, byte[]> imagesMap) {
@@ -41,10 +47,23 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 		log.info "s3Path:{} ${imageProcessRequest.s3Path}"
 		log.info "processTime:{} ${imageProcessRequest.processTime}"
 		Set<Map<String,String>> imageMetaData =  producerTemplate.requestBody(imageProcessRequest, Set.class)
-		imageMetaData.each {
-			imagingMetaDataRepository.createImageMetaData(it)
+
+		jsonBuilder{
+			imageMetaData.each {
+				imageMeta(
+						it.each {k,v->
+							k: v
+						}
+						)
+			}
 		}
-		return null
+		
+		imageMetaData.each {
+			Map<String,String> filteredMap = this.filterMetaData(it)
+			log.info "filteredMap:{} ${filteredMap}"
+			imagingMetaDataRepository.createImageMetaData(filteredMap)
+		}
+		return jsonBuilder.toString()
 	}
 
 	//normal=1024*1024,stardand=1217*1217
@@ -61,6 +80,15 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 		}
 		resultList << [name:'original']
 		return resultList
+	}
+
+	Map<String,String> filterMetaData(Map<String,String> originalMetaMap){
+		return Maps.filterKeys(originalMetaMap, new Predicate<String>() {
+			@Override
+			public boolean apply(String input) {
+				return input.equals("Make") || input.equals("GPSInfo")|| input.equals("tags")|| input.equals("name")|| input.equals("processTime") ||input.equals("DateTimeOriginal")|| input.equals("Model")|| input.equals("Orientation")|| input.equals("XResolution")|| input.equals("YResolution")
+			}
+		})
 	}
 
 	AbstractImageInfo buildAbstractImage(final String imageName,final byte[] imageBytes){
