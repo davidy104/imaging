@@ -20,6 +20,7 @@ import com.google.common.io.Resources
 import com.google.inject.Inject
 import com.sun.jersey.api.client.Client
 import com.sun.jersey.api.client.ClientResponse
+import com.sun.jersey.api.client.WebResource
 import com.sun.jersey.core.header.FormDataContentDisposition
 import com.sun.jersey.multipart.FormDataBodyPart
 import com.sun.jersey.multipart.FormDataMultiPart
@@ -36,6 +37,8 @@ class ImageProcessAPIIntegrationTest {
 	static final String[] IMAGS = ["test01.JPG", "test02.JPG"]
 
 	Map<String,byte[]> imagesMap = [:]
+
+	static final String TEST_TAG="office01"
 
 	@Inject
 	public void setJerseyClient(Client jerseyClient) {
@@ -54,7 +57,7 @@ class ImageProcessAPIIntegrationTest {
 	public void testProcessImage() {
 		FormDataMultiPart multiPart = new FormDataMultiPart()
 		multiPart.field("scalingConfig", "normal=1024*1024,thumbnail=1217*1217")
-		multiPart.field("tag", "office01")
+		multiPart.field("tag", TEST_TAG)
 
 		imagesMap.each{k,v->
 			final FormDataContentDisposition dispo = FormDataContentDisposition
@@ -77,6 +80,17 @@ class ImageProcessAPIIntegrationTest {
 	}
 
 	@Test
-	public void testDeleteByTag(){
+	public void testDelete(){
+		WebResource webResource = jerseyClient.resource(imageServiceURI).path(TEST_TAG)
+		ClientResponse response = webResource
+				.accept(MediaType.APPLICATION_JSON)
+				.type(MediaType.APPLICATION_JSON)
+				.delete(ClientResponse.class)
+
+		int statusCode = response.getStatus()
+		log.info "statusCode:{} $statusCode"
+
+		def responseStr = getResponsePayload(response)
+		log.info "responseStr:{} $responseStr"
 	}
 }

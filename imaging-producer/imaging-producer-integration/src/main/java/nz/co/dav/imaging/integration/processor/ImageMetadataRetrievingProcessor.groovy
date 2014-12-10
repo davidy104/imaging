@@ -21,6 +21,7 @@ class ImageMetadataRetrievingProcessor implements Processor {
 		String s3Path = exchange.getProperty("s3Path")
 		String processTime = exchange.getProperty("processTime", String.class)
 		String name = imageInfo.imageName
+		def extension = imageInfo.extension
 
 		byte[] imageBytes = imageInfo.imageBytes
 		def metadataMap = [:]
@@ -56,11 +57,11 @@ class ImageMetadataRetrievingProcessor implements Processor {
 
 		scalingConfigs.each {
 			def scalingName = it['name']
-			scalingName = s3Prefix + scalingName
-			s3KeySet << scalingName
+			def imageFullPath = s3Prefix + name +"-"+scalingName+ "."+extension
+			s3KeySet << imageFullPath
 		}
 		String imageScalingS3Keis = Joiner.on(":").join(s3KeySet)
-		metadataMap.put("imageScalingS3Keis", imageScalingS3Keis)
+		metadataMap.put("imagesS3Keis", imageScalingS3Keis)
 
 		exchange.setProperty("metadataMap", metadataMap)
 	}

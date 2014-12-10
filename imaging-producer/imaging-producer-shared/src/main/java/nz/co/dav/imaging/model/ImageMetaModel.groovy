@@ -9,5 +9,7 @@ class ImageMetaModel implements Serializable{
 	String tag
 	String name
 	String createTime
+	String s3Prefix
+	String s3Path
 	Map<String,String> metaMap = [:]
 }

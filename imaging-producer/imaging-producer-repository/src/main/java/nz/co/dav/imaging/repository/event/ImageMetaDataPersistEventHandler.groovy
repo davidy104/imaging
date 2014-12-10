@@ -28,7 +28,7 @@ class ImageMetaDataPersistEventHandler {
 
 		imageMetaDataPersistEvent.imageMetaDataSet.each {
 			String nodeUri
-			ImageMetaModel imageMetaModel = new ImageMetaModel(tag:it['tag'],name:it['name'],createTime:it['DateTimeOriginal'])
+			ImageMetaModel imageMetaModel = new ImageMetaModel(tag:it['tag'],name:it['name'],createTime:it['DateTimeOriginal'],s3Prefix:it['s3Prefix'],s3Path:it['imagesS3Keis'])
 			imageMetaModel.metaMap = it
 			try {
 				nodeUri = imagingMetaDataRepository.createImageMetaData(imageMetaModel)

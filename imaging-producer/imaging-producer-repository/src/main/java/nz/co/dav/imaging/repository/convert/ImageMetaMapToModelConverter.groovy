@@ -8,6 +8,6 @@ class ImageMetaMapToModelConverter implements Function<Map<String,String>, Image
 
 	@Override
 	public ImageMetaModel apply(Map<String, String> input) {
-		return new ImageMetaModel(tag:input['tag'],name:input['name'],createTime:input['DateTimeOriginal'],metaMap:input)
+		return new ImageMetaModel(tag:input['tag'],name:input['name'],createTime:input['DateTimeOriginal'],metaMap:input,s3Prefix:input['s3Prefix'],s3Path:input['imagesS3Keis'])
 	}
 }

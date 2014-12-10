@@ -13,8 +13,12 @@ import nz.co.dav.imaging.repository.ImagingMetaDataRepository
 import org.apache.camel.Produce
 import org.apache.camel.ProducerTemplate
 
+import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.model.GetObjectRequest
+import com.amazonaws.services.s3.model.S3Object
 import com.google.common.base.Splitter
 import com.google.inject.Inject
+import com.google.inject.name.Named
 
 @Slf4j
 class ImagingProcessDSImpl implements ImagingProcessDS {
@@ -27,7 +31,16 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 	SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
 
 	@Inject
+	@Named("AWS.S3_BUCKET_NAME")
+	String awsS3Bucket
+
+	@Inject
+	AmazonS3 amazonS3
+
+	@Inject
 	ImagingMetaDataRepository imagingMetaDataRepository
+
+	static final String IMAGE_SCALINGS_DELIMITER =":"
 
 	@Override
 	String process(final String scalingConfig,final String tag, final Map<String, byte[]> imagesMap) {
@@ -71,8 +84,48 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 	}
 
 	@Override
-	void deleteAllImageMetaByTag(final String tag) {
+	void deleteAllImageMeta(final String tag) {
+		def key = S3_IMG_PATH +"/"+ tag
+		amazonS3.deleteObject(awsS3Bucket, key)
+
+		this.getAllImageMetaModel(tag).each {
+			def s3keies = it.s3Path
+			if(s3keies){
+				Iterable<String> values = Splitter.on(IMAGE_SCALINGS_DELIMITER).split(s3keies)
+				values.each {s3key->
+					amazonS3.deleteObject(awsS3Bucket, s3key)
+				}
+			}
+		}
 		imagingMetaDataRepository.deleteAllImageMetaByTag(tag)
+	}
+
+	@Override
+	public S3Object getImage(final String tag,final String name, final String scalingType) {
+		ImageMetaModel found = this.getImageMetaDataByTagAndName(tag, name)
+		if(found){
+			def s3keies = found.s3Path
+			log.info "s3keies:{} $s3keies"
+			def s3Path
+			if(s3keies){
+				Iterable<String> values = Splitter.on(IMAGE_SCALINGS_DELIMITER).split(s3keies)
+				if(scalingType){
+					values.any {
+						if(it.contains(scalingType)){
+							s3Path = it
+							return true
+						}
+					}
+				} else {
+					s3Path = values.first()
+				}
+			}
+			log.info "s3Path:{} $s3Path"
+			if(s3Path){
+				return amazonS3.getObject(new GetObjectRequest(awsS3Bucket, s3Path))
+			}
+		}
+		return null
 	}
 
 }

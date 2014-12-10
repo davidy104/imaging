@@ -12,15 +12,19 @@ import javax.ws.rs.Produces
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.MultivaluedMap
 import javax.ws.rs.core.Response
+import javax.ws.rs.core.Response.Status
 
 import nz.co.dav.imaging.NotFoundException
 import nz.co.dav.imaging.ds.ImagingProcessDS
 import nz.co.dav.imaging.model.ImageMetaModel
 
 import org.apache.commons.io.IOUtils
+import org.apache.commons.io.input.ProxyInputStream
 import org.jboss.resteasy.plugins.providers.multipart.InputPart
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput
 
+import com.amazonaws.services.s3.model.AmazonS3Exception
+import com.amazonaws.services.s3.model.S3Object
 import com.google.inject.Inject
 
 
@@ -65,7 +69,7 @@ public class ImagingResource {
 	}
 
 	@GET
-	@Path("{tag}/{name}")
+	@Path("meta/{tag}/{name}")
 	@Produces("application/json")
 	Response getImageMeta(
 			@PathParam("tag") String tag,@PathParam("name") String name) {
@@ -82,13 +86,13 @@ public class ImagingResource {
 	}
 
 	@GET
-	@Path("{tag}")
+	@Path("meta/{tag}")
 	@Produces("application/json")
 	Response getImageMetaByTag(@PathParam("tag") String tag){
 		List<ImageMetaModel> imageMetaModelList = []
 		try {
 			imageMetaModelList = imagingProcessDS.getAllImageMetaModel(tag)
-		} catch (final Exception e) {
+		} catch (e) {
 			if(e instanceof NotFoundException){
 				return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build()
 			}
@@ -99,15 +103,39 @@ public class ImagingResource {
 
 	@DELETE @Path("{tag}")
 	@Produces("application/json")
-	Response deletImageByTag(@PathParam("tag") String tag){
+	Response deletImage(@PathParam("tag") String tag){
 		try {
-			imagingProcessDS.deleteAllImageMetaByTag(tag)
-		} catch (final Exception e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build()
+			imagingProcessDS.deleteAllImageMeta(tag)
+		} catch (e) {
+			if(e instanceof NotFoundException ){
+				return Response.status(Status.NOT_FOUND).entity(e.getMessage()).build()
+			} else if(e instanceof AmazonS3Exception){
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build()
+			}
+			throw e
 		}
 		return Response.status(Response.Status.NO_CONTENT).entity("images deleted with tag [$tag]").build()
 	}
 
+	@GET
+	@Path("stream/{tag}/{name}/{scalingType}")
+	Response showImage(@PathParam("tag") final String tag,@PathParam("name") String name,@PathParam("scalingType") String scalingType){
+		try {
+			final S3Object s3Object = imagingProcessDS.getImage(tag, name, scalingType)
+			return Response.ok(new ProxyInputStream(s3Object.getObjectContent()) {
+				@Override
+				public void close() throws IOException {
+					super.close();
+					s3Object.close();
+				}
+			}, s3Object.getObjectMetadata().getContentType()).build()
+		} catch (e) {
+			if(e instanceof NotFoundException || e instanceof AmazonS3Exception){
+				return Response.status(Status.NOT_FOUND).entity(e.getMessage()).build()
+			}
+			throw e
+		}
+	}
 
 	byte[] getImageBytes(final InputPart inputPart){
 		InputStream inputStream
@@ -127,8 +155,8 @@ public class ImagingResource {
 		String[] contentDisposition = header.getFirst("Content-Disposition").split(";")
 		contentDisposition.each{
 			if ((it.trim().startsWith("filename"))) {
-				String[] name = it.split("=")
-				String finalFileName = name[1].trim().replaceAll("\"", "")
+				String[] tname = it.split("=")
+				String finalFileName = tname[1].trim().replaceAll("\"", "")
 				return finalFileName
 			}
 		}
