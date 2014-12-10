@@ -9,6 +9,8 @@ import org.apache.sanselan.Sanselan
 import org.apache.sanselan.common.IImageMetadata
 import org.apache.sanselan.common.ImageMetadata.Item
 
+import com.google.common.base.Joiner
+
 @Slf4j
 class ImageMetadataRetrievingProcessor implements Processor {
 
@@ -16,6 +18,7 @@ class ImageMetadataRetrievingProcessor implements Processor {
 	public void process(Exchange exchange) throws Exception {
 		AbstractImageInfo imageInfo = exchange.getIn().getBody(AbstractImageInfo.class)
 		String tag = exchange.getProperty("tag", String.class)
+		String s3Path = exchange.getProperty("s3Path")
 		String processTime = exchange.getProperty("processTime", String.class)
 		String name = imageInfo.imageName
 
@@ -38,6 +41,27 @@ class ImageMetadataRetrievingProcessor implements Processor {
 		metadataMap.put("tag", tag)
 		metadataMap.put("name", name)
 		metadataMap.put("processTime", processTime)
+
+		List<Map<String, String>> scalingConfigs = exchange.properties['scalingConfigs']
+		Set<String> s3KeySet=[]
+		def s3Prefix
+
+		if(tag){
+			tag = !tag.endsWith("/")?tag+"/":tag
+			s3Prefix = !s3Path.endsWith("/")?s3Path+"/"+tag:s3Path+tag
+		} else {
+			s3Prefix = !s3Path.endsWith("/")?s3Path+"/":s3Path
+		}
+		metadataMap.put("s3Prefix", s3Prefix)
+
+		scalingConfigs.each {
+			def scalingName = it['name']
+			scalingName = s3Prefix + scalingName
+			s3KeySet << scalingName
+		}
+		String imageScalingS3Keis = Joiner.on(":").join(s3KeySet)
+		metadataMap.put("imageScalingS3Keis", imageScalingS3Keis)
+
 		exchange.setProperty("metadataMap", metadataMap)
 	}
 }

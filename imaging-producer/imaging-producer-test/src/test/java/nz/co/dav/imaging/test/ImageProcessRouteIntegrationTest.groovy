@@ -41,7 +41,7 @@ class ImageProcessRouteIntegrationTest {
 
 	@Before
 	void setUp(){
-		request = new ImageProcessRequest(tags:'firstTest',s3Path:'image',processTime:'2014-12-04')
+		request = new ImageProcessRequest(tag:'firstTest',s3Path:'image',processTime:'2014-12-04')
 		IMAGS.eachWithIndex{obj,i->
 			def name = "test"+i
 			byte[] ibytes = Resources.toByteArray(Resources.getResource(obj))

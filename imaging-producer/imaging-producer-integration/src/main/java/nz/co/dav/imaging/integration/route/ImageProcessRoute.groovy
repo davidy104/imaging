@@ -101,7 +101,7 @@ class ImageProcessRoute extends RouteBuilder {
 				.to("aws-s3://$awsS3Bucket?amazonS3Client=#amazonS3")
 
 		from("direct:sendImgEvent")
-				.setBody(simple('${property.tags}:'+eventTime))
+				.setBody(simple('${property.tag}:'+eventTime))
 				.to("aws-sqs://$awsSqsEventQueueName?amazonSQSClient=#amazonSqs")
 	}
 }
