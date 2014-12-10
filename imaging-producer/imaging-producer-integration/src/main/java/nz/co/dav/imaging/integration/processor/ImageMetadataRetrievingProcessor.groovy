@@ -26,14 +26,18 @@ class ImageMetadataRetrievingProcessor implements Processor {
 			metadata.getItems().each{
 				Item item = (Item)it
 				def originalKeyword = item.keyword
-				originalKeyword = originalKeyword.replaceAll("\\s", "")
-				metadataMap.put(originalKeyword, item.text)
+				if(!originalKeyword.startsWith("Unknown")){
+					originalKeyword = originalKeyword.replaceAll("\\s", "")
+					def text = item.text
+					text = text.replaceAll("/", "\\/")
+					text =  text.replaceAll("'", "")
+					metadataMap.put(originalKeyword, text)
+				}
 			}
 		}
 		metadataMap.put("tag", tag)
 		metadataMap.put("name", name)
 		metadataMap.put("processTime", processTime)
-		log.info "metadataMap:{} $metadataMap"
 		exchange.setProperty("metadataMap", metadataMap)
 	}
 }

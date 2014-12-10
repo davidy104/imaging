@@ -1,6 +1,5 @@
 package nz.co.dav.imaging.repository.event
 
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import nz.co.dav.imaging.event.ImageMetaDataPersistEvent
 import nz.co.dav.imaging.model.ImageMetaModel
@@ -16,28 +15,21 @@ class ImageMetaDataPersistEventHandler {
 
 	EventBus imageMetaDataPersistEventBus
 
-	JsonSlurper jsonSlurper
-
-	public ImageMetaDataPersistEventHandler(final EventBus imageMetaDataPersistEventBus,final ImagingMetaDataRepository imagingMetaDataRepository,final JsonSlurper jsonSlurper) {
+	public ImageMetaDataPersistEventHandler(final EventBus imageMetaDataPersistEventBus,final ImagingMetaDataRepository imagingMetaDataRepository) {
 		this.imageMetaDataPersistEventBus = imageMetaDataPersistEventBus
 		imageMetaDataPersistEventBus.register(this)
 		this.imagingMetaDataRepository = imagingMetaDataRepository
-		this.jsonSlurper = jsonSlurper
 	}
 
 	@Subscribe
 	Set<String> persist(final ImageMetaDataPersistEvent imageMetaDataPersistEvent) {
 		log.info "imageMetaDataPersistEvent:{} $imageMetaDataPersistEvent"
 		Set<String> nodeUris = []
-		String imageMataDataJson = imageMetaDataPersistEvent.imageMataDataJson
-		List metaList = (List)jsonSlurper.parseText(imageMataDataJson)
 
-		metaList.each{
-			Map metaMap = (Map)it
-			String metaSting = (String)it
-			ImageMetaModel imageMetaModel = new ImageMetaModel(tag:metaMap['tag'],name:metaMap['name'],createTime:metaMap['DateTimeOriginal'],meta:metaSting)
-			log.info "imageMetaModel:{} $imageMetaModel"
+		imageMetaDataPersistEvent.imageMetaDataSet.each {
 			String nodeUri
+			ImageMetaModel imageMetaModel = new ImageMetaModel(tag:it['tag'],name:it['name'],createTime:it['DateTimeOriginal'])
+			imageMetaModel.metaMap = it
 			try {
 				nodeUri = imagingMetaDataRepository.createImageMetaData(imageMetaModel)
 				nodeUris << nodeUri
@@ -45,6 +37,7 @@ class ImageMetaDataPersistEventHandler {
 				log.error "persist image metadata error. $e"
 			}
 		}
+
 		return nodeUris
 	}
 }

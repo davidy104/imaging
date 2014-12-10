@@ -1,0 +1,4 @@
+START n = node(*) 
+OPTIONAL MATCH n-[r]-() 
+WHERE (ID(n)>0 AND ID(n)<50000) 
+DELETE n, r;

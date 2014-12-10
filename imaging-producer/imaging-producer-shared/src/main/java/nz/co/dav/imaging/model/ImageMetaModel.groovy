@@ -4,10 +4,10 @@ import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
 @ToString(includeNames = true, includeFields=true)
-@EqualsAndHashCode(includes=["tag","name"])
+@EqualsAndHashCode(includes=["tag","name","createTime"])
 class ImageMetaModel {
 	String tag
 	String name
 	String createTime
-	String meta
+	Map<String,String> metaMap = [:]
 }

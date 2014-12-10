@@ -12,7 +12,6 @@ import nz.co.dav.imaging.repository.convert.CypherInPredicateConverter;
 import nz.co.dav.imaging.repository.convert.CypherTransactionalAPIRestSingleTypeRespConverter;
 import nz.co.dav.imaging.repository.convert.CypherUpdateStatementReqConverter;
 import nz.co.dav.imaging.repository.convert.ImageMetaMapToModelConverter;
-import nz.co.dav.imaging.repository.convert.ImageModelToMetaMapForCreationConverter;
 import nz.co.dav.imaging.repository.convert.Neo4jAPIErrorRespConverter;
 import nz.co.dav.imaging.repository.convert.Neo4jRestAPIRespJsonConverter;
 import nz.co.dav.imaging.repository.convert.NodeAPIRespConverter;
@@ -53,13 +52,9 @@ public class ImagingRepositoryModule extends AbstractModule {
 		@Inject
 		ImagingMetaDataRepository imagingMetaDataRepository;
 
-		@Inject
-		@Named("jsonSlurper")
-		JsonSlurper jsonSlurper;
-
 		@Override
 		public ImageMetaDataPersistEventHandler get() {
-			return new ImageMetaDataPersistEventHandler(imageMetaDataPersistEventBus, imagingMetaDataRepository, jsonSlurper);
+			return new ImageMetaDataPersistEventHandler(imageMetaDataPersistEventBus, imagingMetaDataRepository);
 		}
 	}
 
@@ -123,13 +118,6 @@ public class ImagingRepositoryModule extends AbstractModule {
 	@Named("cypherCreateStatmentReqConverter")
 	public Function<Map<String, Object>, String> cypherCreateStatmentReqConverter() {
 		return new CypherCreateStatementReqConverter();
-	}
-
-	@Provides
-	@Singleton
-	@Named("imageModelToMetaMapForCreationConverter")
-	public Function<ImageMetaModel, Function<Map<String, Object>, String>> imageModelToMetaMapForCreationConverter(final @Named("cypherCreateStatmentReqConverter") Function<Map<String, Object>, String> cypherCreateStatmentReqConverter) {
-		return new ImageModelToMetaMapForCreationConverter(cypherCreateStatmentReqConverter);
 	}
 
 	@Provides
