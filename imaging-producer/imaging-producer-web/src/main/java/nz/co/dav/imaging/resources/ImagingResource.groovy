@@ -13,15 +13,16 @@ import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.MultivaluedMap
 import javax.ws.rs.core.Response
 
+import nz.co.dav.imaging.NotFoundException
 import nz.co.dav.imaging.ds.ImagingProcessDS
 import nz.co.dav.imaging.model.ImageMetaModel
 
 import org.apache.commons.io.IOUtils
-import org.apache.commons.lang3.StringUtils
 import org.jboss.resteasy.plugins.providers.multipart.InputPart
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput
 
 import com.google.inject.Inject
+
 
 @Path("/")
 @Slf4j
@@ -31,7 +32,7 @@ public class ImagingResource {
 	ImagingProcessDS imagingProcessDS
 
 	@POST
-	@Path("/process")
+	@Path("process")
 	@Produces("application/json")
 	@Consumes("multipart/form-data")
 	Response processImage(final MultipartFormDataInput input) {
@@ -64,24 +65,36 @@ public class ImagingResource {
 	}
 
 	@GET
-	@Path("/{tag}/{name}")
+	@Path("{tag}/{name}")
 	@Produces("application/json")
 	Response getImageMeta(
 			@PathParam("tag") String tag,@PathParam("name") String name) {
+		ImageMetaModel foundImageMetaModel
 		try {
-			if(!StringUtils.isEmpty(tag) && !StringUtils.isEmpty(name)){
-				ImageMetaModel foundImageMetaModel = imagingProcessDS.getImageMetaDataByTagAndName(tag,name)
-				return Response.ok(foundImageMetaModel).type(MediaType.APPLICATION_JSON).build()
-			} else if(!StringUtils.isEmpty(tag)&& StringUtils.isEmpty(name)){
-				List<ImageMetaModel> imageMetaModelList = imagingProcessDS.getAllImageMetaModel(tag)
-				return Response.ok(imageMetaModelList).type(MediaType.APPLICATION_JSON).build()
-			} else {
-				return Response.status(Response.Status.BAD_REQUEST).entity("either tag or name must be provided.").build();
-			}
+			foundImageMetaModel = imagingProcessDS.getImageMetaDataByTagAndName(tag,name)
 		} catch (final Exception e) {
-			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build()
+			if(e instanceof NotFoundException){
+				return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build()
+			}
+			throw e
 		}
-		return null
+		return Response.ok(foundImageMetaModel).type(MediaType.APPLICATION_JSON).build()
+	}
+
+	@GET
+	@Path("{tag}")
+	@Produces("application/json")
+	Response getImageMetaByTag(@PathParam("tag") String tag){
+		List<ImageMetaModel> imageMetaModelList = []
+		try {
+			imageMetaModelList = imagingProcessDS.getAllImageMetaModel(tag)
+		} catch (final Exception e) {
+			if(e instanceof NotFoundException){
+				return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build()
+			}
+			throw e
+		}
+		return Response.ok(imageMetaModelList).type(MediaType.APPLICATION_JSON).build()
 	}
 
 	@DELETE @Path("{tag}")
