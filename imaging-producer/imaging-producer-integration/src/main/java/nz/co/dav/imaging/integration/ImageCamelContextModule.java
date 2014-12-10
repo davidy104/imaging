@@ -3,7 +3,6 @@ package nz.co.dav.imaging.integration;
 import nz.co.dav.imaging.integration.config.ImageCamelContext;
 import nz.co.dav.imaging.integration.processor.ImageMetadataAggregationStrategy;
 import nz.co.dav.imaging.integration.processor.ImageMetadataRetrievingProcessor;
-import nz.co.dav.imaging.integration.processor.ImageScalingAggregationStrategy;
 import nz.co.dav.imaging.integration.processor.ImageScalingProcessor;
 import nz.co.dav.imaging.integration.route.ImageProcessRoute;
 
@@ -93,13 +92,6 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 	@Named("imageMetadataAggregationStrategy")
 	public AggregationStrategy imageMetadataAggregationStrategy() {
 		return new ImageMetadataAggregationStrategy();
-	}
-
-	@Provides
-	@Singleton
-	@Named("imageScalingAggregationStrategy")
-	public AggregationStrategy imageScalingAggregationStrategy() {
-		return new ImageScalingAggregationStrategy();
 	}
 
 }
