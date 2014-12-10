@@ -22,10 +22,6 @@ class ImagingMetaDataRepositoryImpl extends Neo4jRepositoryBase implements Imagi
 	@Named("imageMetaMapToModelConverter")
 	Function<Map<String,String>, ImageMetaModel> imageMetaMapToModelConverter
 
-	@Inject
-	@Named("imageModelToMetaMapForCreationConverter")
-	Function<ImageMetaModel, Function<Map<String, Object>, String>> imageModelToMetaMapForCreationConverter
-
 	@Override
 	String createImageMetaData(final ImageMetaModel imageMetaModel) {
 		checkArgument(imageMetaModel!=null,"imageMetaModel can not be null.")
@@ -44,11 +40,10 @@ class ImagingMetaDataRepositoryImpl extends Neo4jRepositoryBase implements Imagi
 				throw e
 			}
 		}
-		log.info "unique:{} $unique"
 		if(!unique){
 			throw new DuplicatedException('image with the same tag and name already existed.')
 		}
-		String addMetaJson = imageModelToMetaMapForCreationConverter.apply(imageMetaModel)
+		String addMetaJson = this.cypherCreateStatmentReqConverter.apply(imageMetaModel.metaMap)
 		log.info "addMetaJson:{} $addMetaJson"
 		return neo4jRestAPIAccessor.createNodeFromCypherAPI("ImageMetaData", addMetaJson)
 	}

@@ -70,16 +70,16 @@ class ImageProcessRoute extends RouteBuilder {
 				.threads()
 				.executorServiceRef("genericThreadPool")
 				.setBody(simple('${property.metadataSet}'))
-				.marshal().json(JsonLibrary.Jackson)
 				.threads()
 				.executorServiceRef("genericThreadPool")
 				.process(new Processor(){
 					@Override
 					public void process(final Exchange exchange) throws Exception {
-						String imageMetaJson = exchange.getIn().getBody(String.class)
-						imageMetaDataPersistEventBus.post(new ImageMetaDataPersistEvent(imageMataDataJson:imageMetaJson))
+						def imageMetaSet = exchange.getIn().getBody(Set.class)
+						imageMetaDataPersistEventBus.post(new ImageMetaDataPersistEvent(imageMetaDataSet:imageMetaSet))
 					}
 				})
+				.marshal().json(JsonLibrary.Jackson)
 				.end()
 
 		from("direct:singleImageProcess")
