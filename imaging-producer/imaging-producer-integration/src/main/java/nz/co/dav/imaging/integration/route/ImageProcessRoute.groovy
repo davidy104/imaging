@@ -60,7 +60,7 @@ class ImageProcessRoute extends RouteBuilder {
 				.setExchangePattern(ExchangePattern.InOut)
 				.setProperty("scalingConfigs", simple('${body.scalingConfigs}'))
 				.setProperty("s3Path", simple('${body.s3Path}'))
-				.setProperty("tag", simple('${body.tags}'))
+				.setProperty("tag", simple('${body.tag}'))
 				.setProperty("processTime", simple('${body.processTime}'))
 				.split(simple('${body.images}'), imageMetadataAggregationStrategy)
 				.parallelProcessing().executorServiceRef("genericThreadPool")

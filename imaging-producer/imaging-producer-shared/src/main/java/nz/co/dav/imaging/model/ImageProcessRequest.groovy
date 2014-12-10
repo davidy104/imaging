@@ -6,7 +6,7 @@ import groovy.transform.ToString
 class ImageProcessRequest {
 	List<Map<String, String>> scalingConfigs = []
 	Set<AbstractImageInfo> images = []
-	String tags
+	String tag
 	String s3Path
 	String processTime
 }

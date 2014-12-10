@@ -38,13 +38,13 @@ public class ImagingResource {
 	Response processImage(final MultipartFormDataInput input) {
 		log.info "processImage start..."
 		def scalingConfig
-		def tags
+		def tag
 		Map<String,byte[]> imageMap = [:]
 		Map<String, List<InputPart>> uploadForm = input.getFormDataMap()
 		uploadForm.each {k,v->
 			InputPart inputPart = v.first()
-			if(k == 'tags'){
-				tags = inputPart.getBody(String.class, null)
+			if(k == 'tag'){
+				tag = inputPart.getBody(String.class, null)
 			}else if(k == 'scalingConfig'){
 				scalingConfig = inputPart.getBody(String.class, null)
 			} else {
@@ -53,9 +53,9 @@ public class ImagingResource {
 			}
 		}
 		log.info "scalingConfigString:{} $scalingConfig"
-		log.info "tags:{} $tags"
+		log.info "tag:{} $tag"
 		uploadForm.keySet().each { log.info "field:{} $it" }
-		String imgMetaJsonString = imagingProcessDS.process(scalingConfig, tags, imageMap)
+		String imgMetaJsonString = imagingProcessDS.process(scalingConfig, tag, imageMap)
 		return Response.ok(imgMetaJsonString).type(MediaType.APPLICATION_JSON).build();
 	}
 

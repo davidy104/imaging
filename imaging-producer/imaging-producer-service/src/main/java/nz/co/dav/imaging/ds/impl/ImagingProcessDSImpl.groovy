@@ -30,10 +30,9 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 	ImagingMetaDataRepository imagingMetaDataRepository
 
 	@Override
-	String process(final String scalingConfig,final String tags, final Map<String, byte[]> imagesMap) {
+	String process(final String scalingConfig,final String tag, final Map<String, byte[]> imagesMap) {
 		String processTime = DATE_FORMAT.format(new Date())
-		log.info "processTime:{} $processTime"
-		ImageProcessRequest imageProcessRequest = new ImageProcessRequest(s3Path:S3_IMG_PATH,tags:tags,processTime:processTime)
+		ImageProcessRequest imageProcessRequest = new ImageProcessRequest(s3Path:S3_IMG_PATH,tag:tag,processTime:processTime)
 		imagesMap.each {k,v->
 			imageProcessRequest.images << this.buildAbstractImage(k, v)
 		}
@@ -53,7 +52,7 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 			scalingConfigMap.put("height", values[1])
 			resultList << scalingConfigMap
 		}
-//		resultList << [name:'original']
+		//		resultList << [name:'original']
 		return resultList
 	}
 

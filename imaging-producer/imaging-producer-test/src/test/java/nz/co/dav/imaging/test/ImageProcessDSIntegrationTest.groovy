@@ -50,8 +50,8 @@ class ImageProcessDSIntegrationTest {
 	@Test
 	public void test() {
 		String scalingConfig = "standard=1024*1024,thumbnail=1217*1217"
-		String tags = "officeTags01"
-		def response = imagingProcessDS.process(scalingConfig, tags, imagesMap)
+		String tag = "office01"
+		def response = imagingProcessDS.process(scalingConfig, tag, imagesMap)
 		log.info "imgmeta--------------------------:{} $response"
 	}
 }

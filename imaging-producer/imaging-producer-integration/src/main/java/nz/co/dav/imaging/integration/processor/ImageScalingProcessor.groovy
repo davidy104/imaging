@@ -24,7 +24,7 @@ class ImageScalingProcessor implements Processor {
 	public void process(Exchange exchange) throws Exception {
 		AbstractImageInfo imageInfo = exchange.getProperty("imageInfo", AbstractImageInfo.class)
 		String s3Path = exchange.getProperty("s3Path")
-		String tags = exchange.getProperty("tags", String.class)
+		String tag = exchange.getProperty("tag", String.class)
 		String processTime = exchange.getProperty("processTime", String.class)
 
 		byte[] imageBytes = imageInfo.imageBytes
@@ -56,9 +56,9 @@ class ImageScalingProcessor implements Processor {
 		int imgStreamAvailable = imageInputStream.available()
 
 		String outputPath
-		if(tags){
-			tags = !tags.endsWith("/")?tags +"/"+fileName:tags+fileName
-			outputPath = !s3Path.endsWith("/")?s3Path +"/"+tags:s3Path+tags
+		if(tag){
+			tag = !tag.endsWith("/")?tag +"/"+fileName:tag+fileName
+			outputPath = !s3Path.endsWith("/")?s3Path +"/"+tag:s3Path+tag
 		} else {
 			outputPath = !s3Path.endsWith("/")?s3Path +"/"+fileName:s3Path+fileName
 		}

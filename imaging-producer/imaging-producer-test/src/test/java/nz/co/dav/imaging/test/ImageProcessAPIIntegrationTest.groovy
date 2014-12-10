@@ -54,17 +54,17 @@ class ImageProcessAPIIntegrationTest {
 	public void testProcessImage() {
 		FormDataMultiPart multiPart = new FormDataMultiPart()
 		multiPart.field("scalingConfig", "normal=1024*1024,thumbnail=1217*1217")
-		multiPart.field("tags", "office01")
-		
+		multiPart.field("tag", "office01")
+
 		imagesMap.each{k,v->
 			final FormDataContentDisposition dispo = FormDataContentDisposition
-			.name(k)
-			.size(v.length)
-			.build()
-			
+					.name(k)
+					.size(v.length)
+					.build()
+
 			final FormDataBodyPart imageBodyPart = new FormDataBodyPart(dispo, v,
-				MediaType.APPLICATION_OCTET_STREAM_TYPE)
-			
+					MediaType.APPLICATION_OCTET_STREAM_TYPE)
+
 			multiPart.bodyPart(imageBodyPart)
 		}
 		ClientResponse response = jerseyClient.resource(imageServiceURI).path("process").type(MediaType.MULTIPART_FORM_DATA).post(ClientResponse.class,multiPart)
@@ -75,9 +75,8 @@ class ImageProcessAPIIntegrationTest {
 		def responseStr = getResponsePayload(response)
 		log.info "responseStr:{} $responseStr"
 	}
-	
+
 	@Test
 	public void testDeleteByTag(){
-		
 	}
 }
