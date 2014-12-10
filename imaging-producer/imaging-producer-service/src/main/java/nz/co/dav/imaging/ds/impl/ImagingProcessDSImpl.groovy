@@ -1,21 +1,19 @@
 package nz.co.dav.imaging.ds.impl;
 
-import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
 
 import java.text.SimpleDateFormat
 
 import nz.co.dav.imaging.ds.ImagingProcessDS
 import nz.co.dav.imaging.model.AbstractImageInfo
+import nz.co.dav.imaging.model.ImageMetaModel
 import nz.co.dav.imaging.model.ImageProcessRequest
 import nz.co.dav.imaging.repository.ImagingMetaDataRepository
 
 import org.apache.camel.Produce
 import org.apache.camel.ProducerTemplate
 
-import com.google.common.base.Predicate
 import com.google.common.base.Splitter
-import com.google.common.collect.Maps
 import com.google.inject.Inject
 
 @Slf4j
@@ -31,9 +29,6 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 	@Inject
 	ImagingMetaDataRepository imagingMetaDataRepository
 
-	@Inject
-	JsonBuilder jsonBuilder
-
 	@Override
 	String process(final String scalingConfig,final String tags, final Map<String, byte[]> imagesMap) {
 		String processTime = DATE_FORMAT.format(new Date())
@@ -43,30 +38,7 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 			imageProcessRequest.images << this.buildAbstractImage(k, v)
 		}
 		imageProcessRequest.scalingConfigs = this.buildScalingConfigMap(scalingConfig)
-		String imageMetaData =  producerTemplate.requestBody(imageProcessRequest, String.class)
-
-		
-		log.info "imageMetaData:{} $imageMetaData"
-		
-//		Set<Map<String,String>> imageMetaData =  producerTemplate.requestBody(imageProcessRequest, Set.class)
-
-//		jsonBuilder{
-//			imageMetaData.each {
-//				imageMeta(
-//						it.each {k,v->
-//							k: v
-//						}
-//						)
-//			}
-//		}
-//		
-//		imageMetaData.each {
-//			Map<String,String> filteredMap = this.filterMetaData(it)
-//			log.info "filteredMap:{} ${filteredMap}"
-//			imagingMetaDataRepository.createImageMetaData(filteredMap)
-//		}
-//		return jsonBuilder.toString()
-		return imageMetaData
+		return  producerTemplate.requestBody(imageProcessRequest, String.class)
 	}
 
 	//normal=1024*1024,stardand=1217*1217
@@ -81,20 +53,27 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 			scalingConfigMap.put("height", values[1])
 			resultList << scalingConfigMap
 		}
-		resultList << [name:'original']
+//		resultList << [name:'original']
 		return resultList
-	}
-
-	Map<String,String> filterMetaData(Map<String,String> originalMetaMap){
-		return Maps.filterKeys(originalMetaMap, new Predicate<String>() {
-			@Override
-			public boolean apply(String input) {
-				return input.equals("Make") || input.equals("GPSInfo")|| input.equals("tags")|| input.equals("name")|| input.equals("processTime") ||input.equals("DateTimeOriginal")|| input.equals("Model")|| input.equals("Orientation")|| input.equals("XResolution")|| input.equals("YResolution")
-			}
-		})
 	}
 
 	AbstractImageInfo buildAbstractImage(final String imageName,final byte[] imageBytes){
 		return new AbstractImageInfo(imageBytes:imageBytes,imageName:imageName,extension:'jpg')
 	}
+
+	@Override
+	ImageMetaModel getImageMetaDataByTagAndName(final String tag,final String name) {
+		return imagingMetaDataRepository.getImageMetaDataByTagAndName(tag, name)
+	}
+
+	@Override
+	List<ImageMetaModel> getAllImageMetaModel(final String tag)  {
+		return imagingMetaDataRepository.getAllImageMetaModel(tag)
+	}
+
+	@Override
+	void deleteAllImageMetaByTag(final String tag) {
+		imagingMetaDataRepository.deleteAllImageMetaByTag(tag)
+	}
+
 }

@@ -5,7 +5,7 @@ import groovy.transform.ToString
 
 @ToString(includeNames = true, includeFields=true)
 @EqualsAndHashCode(includes=["tag","name","createTime"])
-class ImageMetaModel {
+class ImageMetaModel implements Serializable{
 	String tag
 	String name
 	String createTime

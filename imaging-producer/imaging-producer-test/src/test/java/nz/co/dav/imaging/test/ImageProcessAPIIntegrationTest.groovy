@@ -75,4 +75,9 @@ class ImageProcessAPIIntegrationTest {
 		def responseStr = getResponsePayload(response)
 		log.info "responseStr:{} $responseStr"
 	}
+	
+	@Test
+	public void testDeleteByTag(){
+		
+	}
 }

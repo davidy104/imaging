@@ -10,6 +10,7 @@ import nz.co.dav.imaging.config.ConfigurationServiceModule;
 import nz.co.dav.imaging.config.ResourceModule;
 import nz.co.dav.imaging.ds.ImagingDSModule;
 import nz.co.dav.imaging.integration.ImageCamelContextModule;
+import nz.co.dav.imaging.repository.ImagingRepositoryModule;
 
 import org.apache.camel.CamelContext;
 import org.jboss.resteasy.plugins.guice.GuiceResteasyBootstrapServletContextListener;
@@ -31,10 +32,10 @@ public class Bootstrap extends GuiceResteasyBootstrapServletContextListener {
 
 	@Override
 	protected void withInjector(Injector injector) {
-//		final List<Module> modules = Lists.<Module> newArrayList();
-//		modules.add(new ImageCamelContextModule());
-//		modules.add(new SharedModule());
-//		injector = injector.createChildInjector(modules);
+		// final List<Module> modules = Lists.<Module> newArrayList();
+		// modules.add(new ImageCamelContextModule());
+		// modules.add(new SharedModule());
+		// injector = injector.createChildInjector(modules);
 		try {
 			this.camelContext = injector.getInstance(CamelContext.class);
 			this.camelContext.start();
@@ -50,6 +51,7 @@ public class Bootstrap extends GuiceResteasyBootstrapServletContextListener {
 		return Arrays.asList(new ConfigurationServiceModule(),
 				new SharedModule(),
 				new ImageCamelContextModule(),
+				new ImagingRepositoryModule(),
 				new ImagingDSModule(),
 				new ResourceModule());
 	}
