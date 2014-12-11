@@ -25,6 +25,10 @@ class ImageReceivingRoute extends RouteBuilder {
 	String awsSqsEventQueueName
 
 	@Inject
+	@Named("FILE.OUTPUT_PATH")
+	String fileOutputPath
+
+	@Inject
 	@Named("IMAGING_PRODUCER_HTTP_URI")
 	String imagingProducerHttpUri
 
@@ -46,8 +50,10 @@ class ImageReceivingRoute extends RouteBuilder {
 
 	@Override
 	public void configure() throws Exception {
+
 		from("aws-sqs://$awsSqsEventQueueName?amazonSQSClient=#amazonSqs&delay=5000&maxMessagesPerPoll=1&deleteAfterRead=false")
 				.autoStartup(true)
+				.routeId("fetchImages")
 				.transform(new Expression() {
 					@Override
 					public <T> T evaluate(Exchange exchange, Class<T> type) {
@@ -83,14 +89,21 @@ class ImageReceivingRoute extends RouteBuilder {
 					}
 				})
 				.split(simple('${body}'),imageBytesAggregationStrategy)
-				.to("direct:fetchImage")
+				.process(imageFetchFromS3Processor)
 				.end()
 				.process(imageEventMessageReceivingProcessor)
 				.end()
 
 
-		from("direct:fetchImage").process(imageFetchFromS3Processor)
+		from("direct:outputFilesToLocal")
+				.split(simple('${property.imagesBytesList}'))
+				.parallelProcessing().executorServiceRef("genericThreadPool")
+				.to("direct:singleScalingImage")
+				.end()
 
-		//aws-s3://${awsConfigBean.getBucketName()}?amazonS3Client=#amazonS3&maxMessagesPerPoll=1&prefix=${key}
+
+
+		//from ("file:/tmp/in?noop=true").to("file:/tmp/out");
+
 	}
 }
