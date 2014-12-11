@@ -2,6 +2,7 @@ package nz.co.dav.imaging.consume.integration;
 
 import nz.co.dav.imaging.consume.integration.config.ImageCamelContext;
 import nz.co.dav.imaging.consume.integration.processor.ImageEventMessageReceivingProcessor;
+import nz.co.dav.imaging.consume.integration.processor.ImageFetchFromS3Processor;
 import nz.co.dav.imaging.consume.integration.route.ImageReceivingRoute;
 
 import org.apache.camel.CamelContext;
@@ -61,6 +62,13 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 	@Named("imageEventMessageReceivingProcessor")
 	public ImageEventMessageReceivingProcessor imageEventMessageReceivingProcessor() {
 		return new ImageEventMessageReceivingProcessor();
+	}
+
+	@Provides
+	@Singleton
+	@Named("imageFetchFromS3Processor")
+	public ImageFetchFromS3Processor imageFetchFromS3Processor() {
+		return new ImageFetchFromS3Processor();
 	}
 
 }

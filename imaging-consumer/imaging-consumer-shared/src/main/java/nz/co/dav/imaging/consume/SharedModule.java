@@ -37,8 +37,6 @@ public class SharedModule extends AbstractModule {
 				.asEagerSingleton();
 		bind(AmazonSNSClient.class).toProvider(AmazonSNSClientProvider.class)
 				.asEagerSingleton();
-		bind(JsonSlurper.class).asEagerSingleton();
-		bind(JsonBuilder.class).asEagerSingleton();
 	}
 
 	public static class JerseyClientProvider implements Provider<Client> {
@@ -108,6 +106,20 @@ public class SharedModule extends AbstractModule {
 			}
 			return null;
 		}
+	}
+
+	@Provides
+	@Singleton
+	@Named("jsonSlurper")
+	public JsonSlurper jsonSlurper() {
+		return new JsonSlurper();
+	}
+
+	@Provides
+	@Singleton
+	@Named("jsonBuilder")
+	public JsonBuilder jsonBuilder() {
+		return new JsonBuilder();
 	}
 
 	@Provides

@@ -1,0 +1,16 @@
+<html>
+<body>
+	<h4><font color="#0000dd">Dear ${body.toWho},</font></h4>
+	<i>
+	This is for email testing from emailTemplate.
+	</i>
+	<h5><font color="#dd0000">
+  		email content:  ${body.contentDetails[0]}.
+  	</font>
+  	</h5>
+	<h5>
+  	This is an automated email, please do not reply.
+  	${body.signature}
+  	</h5>
+</body>
+</html>
