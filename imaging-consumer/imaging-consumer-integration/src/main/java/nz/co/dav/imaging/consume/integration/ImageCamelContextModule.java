@@ -1,6 +1,7 @@
 package nz.co.dav.imaging.consume.integration;
 
 import nz.co.dav.imaging.consume.integration.config.ImageCamelContext;
+import nz.co.dav.imaging.consume.integration.processor.ImageBytesAggregationStrategy;
 import nz.co.dav.imaging.consume.integration.processor.ImageEventMessageReceivingProcessor;
 import nz.co.dav.imaging.consume.integration.processor.ImageFetchFromS3Processor;
 import nz.co.dav.imaging.consume.integration.route.ImageReceivingRoute;
@@ -10,6 +11,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.guice.CamelModuleWithMatchingRoutes;
 import org.apache.camel.impl.ExplicitCamelContextNameStrategy;
 import org.apache.camel.impl.SimpleRegistry;
+import org.apache.camel.processor.aggregate.AggregationStrategy;
 import org.apache.camel.spi.CamelContextNameStrategy;
 import org.apache.camel.spi.Registry;
 
@@ -69,6 +71,13 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 	@Named("imageFetchFromS3Processor")
 	public ImageFetchFromS3Processor imageFetchFromS3Processor() {
 		return new ImageFetchFromS3Processor();
+	}
+
+	@Provides
+	@Singleton
+	@Named("imageBytesAggregationStrategy")
+	public AggregationStrategy imageBytesAggregationStrategy() {
+		return new ImageBytesAggregationStrategy();
 	}
 
 }

@@ -21,13 +21,16 @@ class ImageFetchFromS3Processor implements Processor {
 	@Override
 	void process(Exchange exchange) {
 		InputStream fileStream
-		String s3key = exchange.in.getBody(String.class)
+		final String s3key = exchange.in.getBody(String.class)
+		final String fileName = s3key.substring(s3key.lastIndexOf("/")+1, s3key.length())
 		final ConsumerTemplate template =exchange.getContext().createConsumerTemplate()
 		Exchange s3ImageExchange = template.receive("aws-s3://$awsS3Bucket?amazonS3Client=#amazonS3&maxMessagesPerPoll=1&prefix=${s3key}", 5000L)
 
 		if (s3ImageExchange) {
 			Message message = s3ImageExchange.getIn()
-			String awsS3Key =message.headers['CamelAwsS3Key']
+			Long awsS3ContentLength =(Long)message.headers['CamelAwsS3ContentLength']
+			exchange.setProperty('awsS3ContentLength',awsS3ContentLength)
+			exchange.setProperty('fileName',fileName)
 			try {
 				fileStream = message.getBody(InputStream.class)
 				byte[] cotentBytes = IOUtils.toByteArray(fileStream)

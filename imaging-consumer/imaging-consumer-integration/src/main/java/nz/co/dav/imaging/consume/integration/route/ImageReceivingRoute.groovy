@@ -7,6 +7,7 @@ import org.apache.camel.Exchange
 import org.apache.camel.Expression
 import org.apache.camel.Processor
 import org.apache.camel.builder.RouteBuilder
+import org.apache.camel.processor.aggregate.AggregationStrategy
 
 import com.google.common.base.Splitter
 import com.google.inject.Inject
@@ -34,10 +35,14 @@ class ImageReceivingRoute extends RouteBuilder {
 	final static String S3PATH_KEY = "s3Path"
 	final static String IMAGE_SCALINGS_DELIMITER =":"
 	final static String PROCESS_SCALING_TYPE="thumbnail"
-	
+
 	@Inject
 	@Named("imageFetchFromS3Processor")
 	Processor imageFetchFromS3Processor
+
+	@Inject
+	@Named("imageBytesAggregationStrategy")
+	AggregationStrategy imageBytesAggregationStrategy
 
 	@Override
 	public void configure() throws Exception {
@@ -77,16 +82,15 @@ class ImageReceivingRoute extends RouteBuilder {
 						return (T)needFetchImagePathSet
 					}
 				})
-				.split(simple('${body}'))
-				.parallelProcessing().executorServiceRef("genericThreadPool")
+				.split(simple('${body}'),imageBytesAggregationStrategy)
 				.to("direct:fetchImage")
 				.end()
 				.process(imageEventMessageReceivingProcessor)
 				.end()
-				
-				
-				from("direct:fetchImage").process(imageFetchFromS3Processor)
-				
-				//aws-s3://${awsConfigBean.getBucketName()}?amazonS3Client=#amazonS3&maxMessagesPerPoll=1&prefix=${key}
+
+
+		from("direct:fetchImage").process(imageFetchFromS3Processor)
+
+		//aws-s3://${awsConfigBean.getBucketName()}?amazonS3Client=#amazonS3&maxMessagesPerPoll=1&prefix=${key}
 	}
 }
