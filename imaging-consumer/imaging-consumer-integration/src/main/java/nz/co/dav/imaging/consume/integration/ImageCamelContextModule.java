@@ -4,6 +4,7 @@ import nz.co.dav.imaging.consume.integration.config.ImageCamelContext;
 import nz.co.dav.imaging.consume.integration.processor.ImageBytesAggregationStrategy;
 import nz.co.dav.imaging.consume.integration.processor.ImageEventMessageReceivingProcessor;
 import nz.co.dav.imaging.consume.integration.processor.ImageFetchFromS3Processor;
+import nz.co.dav.imaging.consume.integration.route.ImageBatchToLocalFileRoute;
 import nz.co.dav.imaging.consume.integration.route.ImageReceivingRoute;
 
 import org.apache.camel.CamelContext;
@@ -31,6 +32,7 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 	protected void configureCamelContext() {
 		bind(CamelContext.class).to(ImageCamelContext.class).asEagerSingleton();
 		bind(Registry.class).toProvider(RegistryProvider.class);
+		bind(RouteBuilder.class).annotatedWith(Names.named("imageBatchToLocalFileRoute")).to(ImageBatchToLocalFileRoute.class).asEagerSingleton();
 		bind(RouteBuilder.class).annotatedWith(Names.named("imageReceivingRoute")).to(ImageReceivingRoute.class).asEagerSingleton();
 	}
 
@@ -69,15 +71,15 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 	@Provides
 	@Singleton
 	@Named("imageFetchFromS3Processor")
-	public ImageFetchFromS3Processor imageFetchFromS3Processor() {
-		return new ImageFetchFromS3Processor();
+	public ImageFetchFromS3Processor imageFetchFromS3Processor(@Named("AWS.S3_BUCKET_NAME") String awsS3Bucket) {
+		return new ImageFetchFromS3Processor(awsS3Bucket);
 	}
 
 	@Provides
 	@Singleton
 	@Named("imageBytesAggregationStrategy")
-	public AggregationStrategy imageBytesAggregationStrategy() {
-		return new ImageBytesAggregationStrategy();
+	public AggregationStrategy imageBytesAggregationStrategy(@Named("IMAGE_SIZE_PER_GROUP") String allowedTotalImageGroupSizeStr) {
+		return new ImageBytesAggregationStrategy(allowedTotalImageGroupSizeStr);
 	}
 
 }

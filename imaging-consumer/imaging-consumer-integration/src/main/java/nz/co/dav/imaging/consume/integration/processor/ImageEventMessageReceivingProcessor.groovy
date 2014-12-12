@@ -14,8 +14,15 @@ class ImageEventMessageReceivingProcessor implements Processor {
 		Message message = exchange.in
 		log.info "exchange:{} $exchange"
 		log.info "message:{} $message"
-		
-		def body = message.getBody()
-		log.info "body:{} $body"
+
+//		def body = message.getBody()
+//		log.info "body:{} $body"
+
+		List<Map<String,byte[]>> imagesBytesList = message.getBody(List.class)
+		imagesBytesList.each {
+			it.each {k,v->
+				log.info "$k --- $v.length"
+			}
+		}
 	}
 }

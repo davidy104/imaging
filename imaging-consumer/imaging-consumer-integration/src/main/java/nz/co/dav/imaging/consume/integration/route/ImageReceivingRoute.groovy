@@ -2,10 +2,10 @@ package nz.co.dav.imaging.consume.integration.route;
 
 import groovy.json.JsonSlurper
 import nz.co.dav.imaging.consume.integration.processor.ImageEventMessageReceivingProcessor
+import nz.co.dav.imaging.consume.integration.processor.ImageFetchFromS3Processor
 
 import org.apache.camel.Exchange
 import org.apache.camel.Expression
-import org.apache.camel.Processor
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.processor.aggregate.AggregationStrategy
 
@@ -24,9 +24,6 @@ class ImageReceivingRoute extends RouteBuilder {
 	@Named("AWS.SQS_EVENT_QUEUE_NAME")
 	String awsSqsEventQueueName
 
-	@Inject
-	@Named("FILE.OUTPUT_PATH")
-	String fileOutputPath
 
 	@Inject
 	@Named("IMAGING_PRODUCER_HTTP_URI")
@@ -42,7 +39,7 @@ class ImageReceivingRoute extends RouteBuilder {
 
 	@Inject
 	@Named("imageFetchFromS3Processor")
-	Processor imageFetchFromS3Processor
+	ImageFetchFromS3Processor imageFetchFromS3Processor
 
 	@Inject
 	@Named("imageBytesAggregationStrategy")
@@ -53,6 +50,7 @@ class ImageReceivingRoute extends RouteBuilder {
 
 		from("aws-sqs://$awsSqsEventQueueName?amazonSQSClient=#amazonSqs&delay=5000&maxMessagesPerPoll=1&deleteAfterRead=false")
 				.autoStartup(true)
+				//				.startupOrder(200)
 				.routeId("fetchImages")
 				.transform(new Expression() {
 					@Override
@@ -76,12 +74,16 @@ class ImageReceivingRoute extends RouteBuilder {
 						resultList.each {
 							Map<String,Object> resultMap = (Map)it
 							def s3keies = resultMap[S3PATH_KEY]
+							String name = resultMap['name']
 							println "s3keies:{} $s3keies"
+							println "name:{} $name"
 							Iterable<String> values = Splitter.on(IMAGE_SCALINGS_DELIMITER).split(s3keies)
-							values.any {scalingType->
-								if(scalingType.contains(PROCESS_SCALING_TYPE)){
-									needFetchImagePathSet << it
-									return true
+							values.iterator().any {scalingImage->
+								String selectScalingImageName = scalingImage.substring(scalingImage.lastIndexOf("/")+1, scalingImage.lastIndexOf("."))
+								String matchImageName = name+"-"+PROCESS_SCALING_TYPE
+								if(matchImageName.equals(selectScalingImageName)){
+									needFetchImagePathSet << scalingImage
+									true
 								}
 							}
 						}
@@ -91,19 +93,10 @@ class ImageReceivingRoute extends RouteBuilder {
 				.split(simple('${body}'),imageBytesAggregationStrategy)
 				.process(imageFetchFromS3Processor)
 				.end()
-				.process(imageEventMessageReceivingProcessor)
+				.setBody(simple('${property.imagesBytesList}'))
+//				.process(imageEventMessageReceivingProcessor)
+				.to("direct:imageBatchToLocalFile")
 				.end()
-
-
-		from("direct:outputFilesToLocal")
-				.split(simple('${property.imagesBytesList}'))
-				.parallelProcessing().executorServiceRef("genericThreadPool")
-				.to("direct:singleScalingImage")
-				.end()
-
-
-
-		//from ("file:/tmp/in?noop=true").to("file:/tmp/out");
 
 	}
 }

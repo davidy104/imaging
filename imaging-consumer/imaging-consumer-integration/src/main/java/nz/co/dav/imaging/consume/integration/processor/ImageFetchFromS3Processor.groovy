@@ -8,21 +8,26 @@ import org.apache.camel.Message
 import org.apache.camel.Processor
 import org.apache.commons.io.IOUtils
 
-import com.google.inject.Inject
-import com.google.inject.name.Named
-
 @Slf4j
 class ImageFetchFromS3Processor implements Processor {
 
-	@Inject
-	@Named("AWS.S3_BUCKET_NAME")
 	String awsS3Bucket
+
+	public ImageFetchFromS3Processor(final String awsS3Bucket) {
+		this.awsS3Bucket = awsS3Bucket;
+	}
+
 
 	@Override
 	void process(Exchange exchange) {
+		log.info "ImageFetchFromS3Processor start"
 		InputStream fileStream
 		final String s3key = exchange.in.getBody(String.class)
-		final String fileName = s3key.substring(s3key.lastIndexOf("/")+1, s3key.length())
+		String fileName = s3key.substring(s3key.lastIndexOf("/")+1, s3key.length())
+		
+		log.info "s3key:{} $s3key"
+		log.info "fileName:{} $fileName"
+		
 		final ConsumerTemplate template =exchange.getContext().createConsumerTemplate()
 		Exchange s3ImageExchange = template.receive("aws-s3://$awsS3Bucket?amazonS3Client=#amazonS3&maxMessagesPerPoll=1&prefix=${s3key}", 5000L)
 
