@@ -21,9 +21,12 @@ class ImageReceivingRoute extends RouteBuilder {
 	ImageEventMessageReceivingProcessor imageEventMessageReceivingProcessor
 
 	@Inject
+	@Named("IMAGING_CONSUME_TYPE")
+	String imagingConsumeType
+
+	@Inject
 	@Named("AWS.SQS_EVENT_QUEUE_NAME")
 	String awsSqsEventQueueName
-
 
 	@Inject
 	@Named("IMAGING_PRODUCER_HTTP_URI")
@@ -50,7 +53,6 @@ class ImageReceivingRoute extends RouteBuilder {
 
 		from("aws-sqs://$awsSqsEventQueueName?amazonSQSClient=#amazonSqs&delay=5000&maxMessagesPerPoll=1&deleteAfterRead=false")
 				.autoStartup(true)
-				//				.startupOrder(200)
 				.routeId("fetchImages")
 				.transform(new Expression() {
 					@Override
@@ -94,7 +96,25 @@ class ImageReceivingRoute extends RouteBuilder {
 				.process(imageFetchFromS3Processor)
 				.end()
 				.setBody(simple('${property.imagesBytesList}'))
-//				.process(imageEventMessageReceivingProcessor)
+				
+				.choice()
+				.when(imagingConsumeType.equalsIgnoreCase("email"))
+				.to("velocity:dummy?loaderCache=false&contentCache=false")
+				.to("direct:sendEmail")
+				.endChoice()
+				.when(imagingConsumeType.equalsIgnoreCase("file"))
+				.bean(sendEmailUtils, "toTextPlainContent")
+				.to("direct:doSendEmail")
+				.endChoice()
+				.otherwise()
+				.to("log:unknown email format?level=ERROR")
+				.throwException(new Exception("unknow email format"))
+				
+				
+				
+				
+				
+				//				.process(imageEventMessageReceivingProcessor)
 				.to("direct:imageBatchToLocalFile")
 				.end()
 

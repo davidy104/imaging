@@ -4,6 +4,7 @@ import nz.co.dav.imaging.consume.integration.config.ImageCamelContext;
 import nz.co.dav.imaging.consume.integration.processor.ImageBytesAggregationStrategy;
 import nz.co.dav.imaging.consume.integration.processor.ImageEventMessageReceivingProcessor;
 import nz.co.dav.imaging.consume.integration.processor.ImageFetchFromS3Processor;
+import nz.co.dav.imaging.consume.integration.processor.SendEmailTransformer;
 import nz.co.dav.imaging.consume.integration.route.ImageBatchToLocalFileRoute;
 import nz.co.dav.imaging.consume.integration.route.ImageReceivingRoute;
 
@@ -32,8 +33,12 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 	protected void configureCamelContext() {
 		bind(CamelContext.class).to(ImageCamelContext.class).asEagerSingleton();
 		bind(Registry.class).toProvider(RegistryProvider.class);
-		bind(RouteBuilder.class).annotatedWith(Names.named("imageBatchToLocalFileRoute")).to(ImageBatchToLocalFileRoute.class).asEagerSingleton();
-		bind(RouteBuilder.class).annotatedWith(Names.named("imageReceivingRoute")).to(ImageReceivingRoute.class).asEagerSingleton();
+		bind(RouteBuilder.class)
+				.annotatedWith(Names.named("imageBatchToLocalFileRoute"))
+				.to(ImageBatchToLocalFileRoute.class).asEagerSingleton();
+		bind(RouteBuilder.class)
+				.annotatedWith(Names.named("imageReceivingRoute"))
+				.to(ImageReceivingRoute.class).asEagerSingleton();
 	}
 
 	public static class RegistryProvider implements Provider<Registry> {
@@ -70,15 +75,24 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 
 	@Provides
 	@Singleton
+	@Named("sendEmailTransformer")
+	public SendEmailTransformer sendEmailTransformer() {
+		return new SendEmailTransformer();
+	}
+
+	@Provides
+	@Singleton
 	@Named("imageFetchFromS3Processor")
-	public ImageFetchFromS3Processor imageFetchFromS3Processor(@Named("AWS.S3_BUCKET_NAME") String awsS3Bucket) {
+	public ImageFetchFromS3Processor imageFetchFromS3Processor(
+			@Named("AWS.S3_BUCKET_NAME") String awsS3Bucket) {
 		return new ImageFetchFromS3Processor(awsS3Bucket);
 	}
 
 	@Provides
 	@Singleton
 	@Named("imageBytesAggregationStrategy")
-	public AggregationStrategy imageBytesAggregationStrategy(@Named("IMAGE_SIZE_PER_GROUP") String allowedTotalImageGroupSizeStr) {
+	public AggregationStrategy imageBytesAggregationStrategy(
+			@Named("IMAGE_SIZE_PER_GROUP") String allowedTotalImageGroupSizeStr) {
 		return new ImageBytesAggregationStrategy(allowedTotalImageGroupSizeStr);
 	}
 

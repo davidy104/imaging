@@ -16,31 +16,77 @@ class ConfigurationServiceImpl implements ConfigurationService{
 	String awsSecretKey
 
 	@Inject
-	@Named("AWS.S3_BUCKET_NAME")
-	String awsS3Bucket
+	@Named("MAIL.HOST")
+	String mailHost
 
 	@Inject
-	@Named("NEO4J.HOST_URI")
-	String neo4jHostUri
+	@Named("MAIL.PASSWORD")
+	String mailPassword
 
 	@Inject
-	@Named("AWS.SQS_EVENT_QUEUE_NAME")
-	String awsSqsQueueName
+	@Named("MAIL.DEBUG")
+	String mailDebug
+
+	@Inject
+	@Named("MAIL.SMTP_AUTH")
+	String mailSmtpAuth
+
+	@Inject
+	@Named("MAIL.CONNECTION_TIMEOUT")
+	String mailConnectionTimeout
+
+	@Inject
+	@Named("MAIL.SMTP_PORT")
+	String mailSmtpPort
+
+	@Inject
+	@Named("MAIL.SMTPS_PORT")
+	String mailSmtpsPort
+
+	@Inject
+	@Named("MAIL.REDELIVERY_DELAY")
+	String mailRedeliveryDelay
+
+	@Inject
+	@Named("MAIL.MAXIMUM_REDELIVERIES")
+	String mailMaxiMumRedeliveries
+
+	@Inject
+	@Named("MAIL.ATTACHED_SIZE")
+	String mailAttachedSize
 
 	@Override
 	public AWSCredentials getAWSCredentials() {
 		return new BasicAWSCredentials(awsAccessKey, awsSecretKey)
 	}
-
+	
 	@Override
-	public String getNeo4jRestHostUri() {
-		return neo4jHostUri
+	public EmailConfig getEmailConfig() {
+		EmailConfig emailConfig = new EmailConfig(host:mailHost,password:mailPassword)
+		if(mailDebug){
+			emailConfig.debug = Boolean.valueOf(mailDebug)
+		}
+		if(mailSmtpAuth){
+			emailConfig.smtpAuth = Boolean.valueOf(mailSmtpAuth)
+		}
+		if(mailConnectionTimeout){
+			emailConfig.connectionTimeOut = Integer.valueOf(mailConnectionTimeout)
+		}
+		if(mailSmtpPort){
+			emailConfig.smtpPort = Integer.valueOf(mailSmtpPort)
+		}
+		if(mailSmtpsPort){
+			emailConfig.smtpsPort = Integer.valueOf(mailSmtpsPort)
+		}
+		if(mailRedeliveryDelay){
+			emailConfig.redeliveryDelay = Integer.valueOf(mailRedeliveryDelay)
+		}
+		if(mailMaxiMumRedeliveries){
+			emailConfig.maximumRedeliveries = Integer.valueOf(mailMaxiMumRedeliveries)
+		}
+		if(mailAttachedSize){
+			emailConfig.attachedSize = Integer.valueOf(mailAttachedSize)
+		}
+		return emailConfig
 	}
-
-	@Override
-	public String getAwsS3BucketName() {
-		return awsS3Bucket
-	}
-
-
 }
