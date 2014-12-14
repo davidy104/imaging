@@ -96,26 +96,19 @@ class ImageReceivingRoute extends RouteBuilder {
 				.process(imageFetchFromS3Processor)
 				.end()
 				.setBody(simple('${property.imagesBytesList}'))
-				
 				.choice()
 				.when(imagingConsumeType.equalsIgnoreCase("email"))
 				.to("velocity:dummy?loaderCache=false&contentCache=false")
 				.to("direct:sendEmail")
 				.endChoice()
 				.when(imagingConsumeType.equalsIgnoreCase("file"))
-				.bean(sendEmailUtils, "toTextPlainContent")
-				.to("direct:doSendEmail")
+				.to("direct:imageBatchToLocalFile")
 				.endChoice()
 				.otherwise()
 				.to("log:unknown email format?level=ERROR")
 				.throwException(new Exception("unknow email format"))
-				
-				
-				
-				
-				
+
 				//				.process(imageEventMessageReceivingProcessor)
-				.to("direct:imageBatchToLocalFile")
 				.end()
 
 	}
