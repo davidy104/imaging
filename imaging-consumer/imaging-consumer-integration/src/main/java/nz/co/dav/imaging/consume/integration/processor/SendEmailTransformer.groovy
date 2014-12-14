@@ -35,8 +35,7 @@ class SendEmailTransformer implements Expression{
 
 		String[] bccArray = sendEmailReq.getBccArray()
 		if (bccArray) {
-			String bccStr = ImagingUtils.arrayToStrWithSeperator(bccArray,
-					';')
+			String bccStr = ImagingUtils.arrayToStrWithSeperator(bccArray,';')
 			messageIn.setHeader("BCC", bccStr)
 		}
 
@@ -48,7 +47,6 @@ class SendEmailTransformer implements Expression{
 
 		if (attachmentMap) {
 			messageIn.attachments.clear()
-
 			attachmentMap.each() {String key,byte[] value ->
 				messageIn.addAttachment(key,
 						new DataHandler(new ByteArrayDataSource(

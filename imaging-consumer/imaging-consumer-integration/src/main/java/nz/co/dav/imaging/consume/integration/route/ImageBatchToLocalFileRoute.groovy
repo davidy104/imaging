@@ -14,12 +14,15 @@ class ImageBatchToLocalFileRoute extends RouteBuilder {
 	@Named("FILE.OUTPUT_PATH")
 	String fileOutputPath
 
+	int nameIndex =0
+
+	int folderNumber=0
+
 	@Override
 	public void configure() {
 		from("direct:imageBatchToLocalFile")
 				.routeId("ImageBatchToLocalFileRoute")
 				.split(body())
-				.parallelProcessing().executorServiceRef("genericThreadPool")
 				.to("direct:doImageBatchToLocalFile")
 				.end()
 
@@ -27,10 +30,8 @@ class ImageBatchToLocalFileRoute extends RouteBuilder {
 				.process(new Processor(){
 					@Override
 					void process(Exchange exchange) throws Exception {
-						int folderNumber = exchange.properties['folderNumber']?:0
-						String imageOutputFolder = fileOutputPath+"/output"+folderNumber
+						String imageOutputFolder = fileOutputPath+"/output"+folderNumber++
 						println "imageOutputFolder:{} $imageOutputFolder"
-						exchange.setProperty("folderNumber", folderNumber++)
 						exchange.setProperty("imageOutputFolder", imageOutputFolder)
 						Map body = exchange.in.getBody(Map.class)
 						exchange.setProperty("imageFileNameList", body.keySet().toList())
@@ -40,14 +41,12 @@ class ImageBatchToLocalFileRoute extends RouteBuilder {
 
 		from("direct:singleImageToLocalFile")
 				.split(simple('${body.values()}'))
-				.parallelProcessing().executorServiceRef("genericThreadPool")
 				.process(new Processor(){
 					@Override
 					void process(Exchange exchange) throws Exception {
-						int index = exchange.properties['index']?:0
+						println "nameIndex:{} $nameIndex"
 						List<String> imageFileNameList = (List<String>)exchange.properties['imageFileNameList']
-						def imageName = imageFileNameList[index]
-						exchange.setProperty("index", index++)
+						def imageName = imageFileNameList[nameIndex++]
 						exchange.setProperty("imageName", imageName)
 						println "imageName:{} $imageName"
 					}
@@ -63,5 +62,6 @@ class ImageBatchToLocalFileRoute extends RouteBuilder {
 					}
 				})
 				.end()
+
 	}
 }

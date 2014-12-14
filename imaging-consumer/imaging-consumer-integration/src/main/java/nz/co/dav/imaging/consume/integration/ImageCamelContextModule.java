@@ -1,10 +1,12 @@
 package nz.co.dav.imaging.consume.integration;
 
+import nz.co.dav.imaging.consume.config.ConfigurationService;
 import nz.co.dav.imaging.consume.integration.config.ImageCamelContext;
 import nz.co.dav.imaging.consume.integration.processor.ImageBytesAggregationStrategy;
 import nz.co.dav.imaging.consume.integration.processor.ImageEventMessageReceivingProcessor;
 import nz.co.dav.imaging.consume.integration.processor.ImageFetchFromS3Processor;
 import nz.co.dav.imaging.consume.integration.processor.SendEmailTransformer;
+import nz.co.dav.imaging.consume.integration.route.ImageBatchToEmail;
 import nz.co.dav.imaging.consume.integration.route.ImageBatchToLocalFileRoute;
 import nz.co.dav.imaging.consume.integration.route.ImageReceivingRoute;
 
@@ -35,10 +37,23 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 		bind(Registry.class).toProvider(RegistryProvider.class);
 		bind(RouteBuilder.class)
 				.annotatedWith(Names.named("imageBatchToLocalFileRoute"))
-				.to(ImageBatchToLocalFileRoute.class).asEagerSingleton();
+				.to(ImageBatchToLocalFileRoute.class);
+		bind(ImageBatchToEmail.class).toProvider(ImageToEmailRouteBuilderProvicer.class)
+				.asEagerSingleton();
 		bind(RouteBuilder.class)
 				.annotatedWith(Names.named("imageReceivingRoute"))
 				.to(ImageReceivingRoute.class).asEagerSingleton();
+	}
+
+	public static class ImageToEmailRouteBuilderProvicer implements Provider<ImageBatchToEmail> {
+
+		@Inject
+		ConfigurationService configurationService;
+
+		@Override
+		public ImageBatchToEmail get() {
+			return new ImageBatchToEmail(configurationService, new SendEmailTransformer());
+		}
 	}
 
 	public static class RegistryProvider implements Provider<Registry> {
@@ -71,13 +86,6 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 	@Named("imageEventMessageReceivingProcessor")
 	public ImageEventMessageReceivingProcessor imageEventMessageReceivingProcessor() {
 		return new ImageEventMessageReceivingProcessor();
-	}
-
-	@Provides
-	@Singleton
-	@Named("sendEmailTransformer")
-	public SendEmailTransformer sendEmailTransformer() {
-		return new SendEmailTransformer();
 	}
 
 	@Provides

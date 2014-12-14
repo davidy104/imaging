@@ -17,7 +17,6 @@ class ImageFetchFromS3Processor implements Processor {
 		this.awsS3Bucket = awsS3Bucket;
 	}
 
-
 	@Override
 	void process(Exchange exchange) {
 		log.info "ImageFetchFromS3Processor start"

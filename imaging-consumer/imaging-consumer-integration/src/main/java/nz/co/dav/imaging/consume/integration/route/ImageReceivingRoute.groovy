@@ -1,7 +1,6 @@
 package nz.co.dav.imaging.consume.integration.route;
 
 import groovy.json.JsonSlurper
-import nz.co.dav.imaging.consume.integration.processor.ImageEventMessageReceivingProcessor
 import nz.co.dav.imaging.consume.integration.processor.ImageFetchFromS3Processor
 
 import org.apache.camel.Exchange
@@ -15,10 +14,6 @@ import com.google.inject.name.Named
 
 //org.apache.camel.component.http.HttpOperationFailedException
 class ImageReceivingRoute extends RouteBuilder {
-
-	@Inject
-	@Named("imageEventMessageReceivingProcessor")
-	ImageEventMessageReceivingProcessor imageEventMessageReceivingProcessor
 
 	@Inject
 	@Named("IMAGING_CONSUME_TYPE")
@@ -97,18 +92,15 @@ class ImageReceivingRoute extends RouteBuilder {
 				.end()
 				.setBody(simple('${property.imagesBytesList}'))
 				.choice()
-				.when(imagingConsumeType.equalsIgnoreCase("email"))
-				.to("velocity:dummy?loaderCache=false&contentCache=false")
-				.to("direct:sendEmail")
+				.when(constant(imagingConsumeType).isEqualTo("email"))
+				.to("direct:imageBatchToEmail")
 				.endChoice()
-				.when(imagingConsumeType.equalsIgnoreCase("file"))
+				.when(constant(imagingConsumeType).isEqualTo("file"))
 				.to("direct:imageBatchToLocalFile")
 				.endChoice()
 				.otherwise()
 				.to("log:unknown email format?level=ERROR")
-				.throwException(new Exception("unknow email format"))
-
-				//				.process(imageEventMessageReceivingProcessor)
+				.throwException(new RuntimeException("unknow imagingConsumeType."))
 				.end()
 
 	}

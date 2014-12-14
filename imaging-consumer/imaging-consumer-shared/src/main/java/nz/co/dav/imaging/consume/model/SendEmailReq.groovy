@@ -9,10 +9,8 @@ class SendEmailReq{
 	String[] ccArray
 	String[] bccArray
 	EmailContent content
-	String[] attachedFileName
-	String templateFile
 	String subject
 	String from
-	String protocol
-	String contentType
+	String protocol='smtp'
+	String contentType='text/html'
 }
