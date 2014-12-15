@@ -1,13 +1,15 @@
 package nz.co.dav.imaging.consume.integration;
 
+import groovy.json.JsonSlurper;
 import nz.co.dav.imaging.consume.config.ConfigurationService;
 import nz.co.dav.imaging.consume.integration.config.ImageCamelContext;
+import nz.co.dav.imaging.consume.integration.processor.GetImageMetaResponseTransformer;
 import nz.co.dav.imaging.consume.integration.processor.ImageBytesAggregationStrategy;
-import nz.co.dav.imaging.consume.integration.processor.ImageEventMessageReceivingProcessor;
 import nz.co.dav.imaging.consume.integration.processor.ImageFetchFromS3Processor;
 import nz.co.dav.imaging.consume.integration.processor.SendEmailTransformer;
 import nz.co.dav.imaging.consume.integration.route.ImageBatchToEmail;
 import nz.co.dav.imaging.consume.integration.route.ImageBatchToLocalFileRoute;
+import nz.co.dav.imaging.consume.integration.route.ImageMetaAPIOperationRoute;
 import nz.co.dav.imaging.consume.integration.route.ImageReceivingRoute;
 
 import org.apache.camel.CamelContext;
@@ -25,6 +27,7 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
+import com.google.inject.Scopes;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
@@ -38,15 +41,16 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 		bind(RouteBuilder.class)
 				.annotatedWith(Names.named("imageBatchToLocalFileRoute"))
 				.to(ImageBatchToLocalFileRoute.class);
-		bind(ImageBatchToEmail.class).toProvider(ImageToEmailRouteBuilderProvicer.class)
-				.asEagerSingleton();
+		bind(ImageBatchToEmail.class).toProvider(ImageToEmailRouteBuilderProvicer.class).in(Scopes.SINGLETON);
+		bind(RouteBuilder.class)
+				.annotatedWith(Names.named("imageMetaAPIOperationRoute"))
+				.to(ImageMetaAPIOperationRoute.class).in(Scopes.SINGLETON);
 		bind(RouteBuilder.class)
 				.annotatedWith(Names.named("imageReceivingRoute"))
 				.to(ImageReceivingRoute.class).asEagerSingleton();
 	}
 
 	public static class ImageToEmailRouteBuilderProvicer implements Provider<ImageBatchToEmail> {
-
 		@Inject
 		ConfigurationService configurationService;
 
@@ -83,9 +87,9 @@ public class ImageCamelContextModule extends CamelModuleWithMatchingRoutes {
 
 	@Provides
 	@Singleton
-	@Named("imageEventMessageReceivingProcessor")
-	public ImageEventMessageReceivingProcessor imageEventMessageReceivingProcessor() {
-		return new ImageEventMessageReceivingProcessor();
+	@Named("getImageMetaResponseTransformer")
+	public GetImageMetaResponseTransformer getImageMetaResponseTransformer(@Named("jsonSlurper") JsonSlurper jsonSlurper) {
+		return new GetImageMetaResponseTransformer(jsonSlurper);
 	}
 
 	@Provides
