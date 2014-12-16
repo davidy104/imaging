@@ -8,9 +8,11 @@ import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response.Status
 
 import nz.co.dav.imaging.webuser.ds.ImagingDS
+import nz.co.dav.imaging.webuser.model.ImageInfo
 
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang3.StringUtils
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 import com.sun.jersey.api.client.Client
@@ -26,15 +28,18 @@ class ImagingDSImpl implements ImagingDS{
 	@Resource
 	JsonSlurper jsonSlurper
 
-	static final String IMAGE_SERVICE_URI="http://localhost/image"
+	@Value('${image.producer_uri}')
+	String imageProducerHostUri
+
+	//	static final String IMAGE_SERVICE_URI="http://localhost/image"
 
 	@Override
-	Set<String> getImagingUrisByTag(final String tagName,String scalingType) {
+	Set<ImageInfo> getImagingUrisByTag(final String tagName,String scalingType) {
 		if(StringUtils.isEmpty(scalingType)){
 			scalingType = "normal"
 		}
-		Set<String> resultSet = []
-		WebResource webResource = jerseyClient.resource(IMAGE_SERVICE_URI).path("meta").path(tagName)
+		Set<ImageInfo> resultSet = []
+		WebResource webResource = jerseyClient.resource(imageProducerHostUri).path("meta").path(tagName)
 		ClientResponse response = webResource
 				.accept(MediaType.APPLICATION_JSON)
 				.type(MediaType.APPLICATION_JSON)
@@ -48,9 +53,9 @@ class ImagingDSImpl implements ImagingDS{
 			Map resultMap = (Map)it
 			def name = resultMap['name']
 			def tag = resultMap['tag']
-			def imageUri = IMAGE_SERVICE_URI+"/stream/"+tag+"/"+name+"/"+scalingType
+			def imageUri = imageProducerHostUri+"/stream/"+tag+"/"+name+"/"+scalingType
 			log.info "imageUri:{} $imageUri"
-			resultSet << imageUri
+			resultSet << new ImageInfo(tag:tag,name:name,imageUri:imageUri)
 		}
 		log.info "resultSet size:{} ${resultSet.size()}"
 		return resultSet
