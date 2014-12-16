@@ -8,23 +8,7 @@
 <script type="text/javascript" src="static/js/imaging.home.js"></script>
 <script type="text/javascript" src="static/js/imaging.form.js"></script>
 <script type="text/javascript" src="static/js/imaging.add.js"></script>
-<script>
-	$(function() {
-	  $(window).load(function(){
-	   $('.image-list-item').imageloader(
-	      {
-	        selector: '.my-square-image',
-	        each: function (elm) {
-	          console.log(elm);
-	        },
-	        callback: function (elm) {
-	          $(elm).fadeIn('slow');
-	        }
-	      }
-	    );
-	  });
-	});
-</script>
+
 <title></title>
 </head>
 <body>
@@ -69,21 +53,26 @@
 			</div>
 		</form:form>
 		
-		<div id="image-list">
-			<c:choose>
-				<c:when test="${empty imagePaths}">
-					<p>
-						<spring:message code="imaging.label.no.image" />
-					</p>
-				</c:when>
-				<c:otherwise>
-					<c:forEach items="${imagePaths}" var="imagePath">
-						<div class="well image-list-item">
-							<img class="my-square-image" src="${imagePath}" data-src="${imagePath}" />
-						</div>
-					</c:forEach>
-				</c:otherwise>
-			</c:choose>
+		<div class="row well">
+			 <div class="span11">
+			 	 <ul class="thumbnails">
+			 	 <c:forEach items="${imageInfos}" var="imageInfo">
+			 	 	<li class="span3">
+	                    <div class="thumbnail">
+	                        <img class="my-square-image" src="${imageInfo.imageUri}" data-src="${imageInfo.imageUri}" />
+	
+	                        <div class="caption">
+	                            <h5><c:out value="${imageInfo.tag}" /></h5>
+	
+	                            <p><c:out value="${imageInfo.name}" /></p>
+	
+	                            <p><a href="place_order.jsp?type=<%=item.getName()%>" class="btn btn-primary">Check Details</a></p>
+	                        </div>
+	                    </div>
+               		</li> 
+               		</c:forEach>           
+			 	 </ul>
+			 </div>
 		</div>
 	</div>
 </body>

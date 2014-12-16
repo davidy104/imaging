@@ -10,6 +10,7 @@
 <link rel="stylesheet" type="text/css"
 	href="static/css/bootstrap-responsive.css" />
 <link rel="stylesheet" type="text/css" href="static/css/styles.css" />
+<link rel="stylesheet" type="text/css" href="static/css/local.css" />
 <script type="text/javascript" src="static/js/vendor/jquery-1.7.2.js"></script>
 <script type="text/javascript" src="static/js/vendor/json2.js"></script>
 <script type="text/javascript" src="static/js/vendor/amplify.js"></script>
