@@ -18,7 +18,7 @@
 	          console.log(elm);
 	        },
 	        callback: function (elm) {
-	          $(elm).fadeIn();
+	          $(elm).fadeIn('slow');
 	        }
 	      }
 	    );
