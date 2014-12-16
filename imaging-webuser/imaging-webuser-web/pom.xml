@@ -4,57 +4,57 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>nz.co.dav.imaging</groupId>
-		<artifactId>imaging-producer</artifactId>
+		<groupId>nz.co.dav.imaging.webuser</groupId>
+		<artifactId>imaging-webuser</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>imaging-producer-web</artifactId>
+	<artifactId>imaging-webuser-web</artifactId>
 	<packaging>war</packaging>
-	<name>imaging-producer-web Maven Webapp</name>
-	<url>http://maven.apache.org</url>
+	<name>imaging-webuser-web Maven Webapp</name>
 	<dependencies>
 		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>imaging-producer-service</artifactId>
+			<artifactId>imaging-webuser-ds</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-servlet</artifactId>
-			<exclusions>
-				<exclusion>
-					<artifactId>commons-logging</artifactId>
-					<groupId>commons-logging</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.jolokia</groupId>
-			<artifactId>jolokia-jvm</artifactId>
-			<classifier>agent</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>jcl-over-slf4j</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>jul-to-slf4j</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>log4j-over-slf4j</artifactId>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.sitemesh</groupId>
+			<artifactId>sitemesh</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.googlecode.json-simple </groupId>
+			<artifactId>json-simple </artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>image</finalName>
+		<finalName>imagingweb</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -81,21 +81,19 @@
 				<version>8.1.5.v20120716</version>
 				<configuration>
 					<jvmArgs>-Xmx2048m -Xms1536m -XX:PermSize=128m -XX:MaxPermSize=256m</jvmArgs>
-					<scanIntervalSeconds>20</scanIntervalSeconds>
+					<scanIntervalSeconds>10</scanIntervalSeconds>
 					<webApp>
-						<contextPath>/image</contextPath>
+						<contextPath>/imagingweb</contextPath>
 					</webApp>
 					<connectors>
 						<connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
-							<port>8222</port>
+							<port>8333</port>
 						</connector>
 					</connectors>
 					<stopPort>18080</stopPort>
-					<!--  
-					<systemPropertiesFile>${project.basedir}/src/main/resources/image-sysprop.properties</systemPropertiesFile>
-					-->
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
+
 </project>

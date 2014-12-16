@@ -55,6 +55,17 @@ class ImageProcessRoute extends RouteBuilder {
 	public void configure() throws Exception {
 		String eventTime = DATE_FORMAT.format(new Date())
 
+		onException(java.net.SocketTimeoutException.class,
+				java.net.ConnectException.class,com.amazonaws.services.s3.model.AmazonS3Exception.class)
+				.maximumRedeliveries(2)
+				.redeliveryDelay(1000)
+				.handled(true)
+				.to("log:errors?level=ERROR&showAll=true&multiline=true")
+
+		onException(Exception.class)
+				.handled(true)
+				.to("log:errors?level=ERROR&showAll=true&multiline=true")
+
 		from("direct:ImageProcess")
 				.routeId('ImageProcess')
 				.setExchangePattern(ExchangePattern.InOut)
