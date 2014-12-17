@@ -1,4 +1,4 @@
-package nz.co.dav.imaging.repository.convert
+package nz.co.dav.imaging.convert
 
 import nz.co.dav.imaging.model.ImageMetaModel
 

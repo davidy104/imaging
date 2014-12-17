@@ -39,6 +39,8 @@ class ImageProcessAPIIntegrationTest {
 	Map<String,byte[]> imagesMap = [:]
 
 	static final String TEST_TAG="SANTA PARADE"
+	
+	static final String TEST_DELETE_NAME="santa-2"
 
 	@Inject
 	public void setJerseyClient(Client jerseyClient) {
@@ -92,5 +94,20 @@ class ImageProcessAPIIntegrationTest {
 
 		def responseStr = getResponsePayload(response)
 		log.info "responseStr:{} $responseStr"
+	}
+	
+	@Test
+	public void testDeleteByTagAndName(){
+		WebResource webResource = jerseyClient.resource(imageServiceURI).path(TEST_TAG).path(TEST_DELETE_NAME)
+				ClientResponse response = webResource
+				.accept(MediaType.APPLICATION_JSON)
+				.type(MediaType.APPLICATION_JSON)
+				.delete(ClientResponse.class)
+				
+				int statusCode = response.getStatus()
+				log.info "statusCode:{} $statusCode"
+				
+				def responseStr = getResponsePayload(response)
+				log.info "responseStr:{} $responseStr"
 	}
 }

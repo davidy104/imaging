@@ -1,5 +1,6 @@
 package nz.co.dav.imaging.ds.impl;
 
+import static com.google.common.base.Preconditions.checkArgument
 import groovy.util.logging.Slf4j
 
 import java.text.SimpleDateFormat
@@ -8,14 +9,19 @@ import nz.co.dav.imaging.ds.ImagingProcessDS
 import nz.co.dav.imaging.model.AbstractImageInfo
 import nz.co.dav.imaging.model.ImageMetaModel
 import nz.co.dav.imaging.model.ImageProcessRequest
+import nz.co.dav.imaging.model.Page
 import nz.co.dav.imaging.repository.ImagingMetaDataRepository
+import nz.co.dav.imaging.repository.support.AbstractCypherQueryNode
+import nz.co.dav.imaging.repository.support.AbstractCypherQueryResult
 
 import org.apache.camel.Produce
 import org.apache.camel.ProducerTemplate
+import org.apache.commons.lang3.StringUtils
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.GetObjectRequest
 import com.amazonaws.services.s3.model.S3Object
+import com.google.common.base.Function
 import com.google.common.base.Splitter
 import com.google.inject.Inject
 import com.google.inject.name.Named
@@ -40,6 +46,10 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 	@Inject
 	ImagingMetaDataRepository imagingMetaDataRepository
 
+	@Inject
+	@Named("imageMetaMapToModelConverter")
+	Function<Map<String,String>, ImageMetaModel> imageMetaMapToModelConverter
+
 	static final String IMAGE_SCALINGS_DELIMITER =":"
 
 	@Override
@@ -47,7 +57,7 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 		String processTime = DATE_FORMAT.format(new Date())
 		ImageProcessRequest imageProcessRequest = new ImageProcessRequest(s3Path:S3_IMG_PATH,tag:tag,processTime:processTime)
 		imagesMap.each {k,v->
-			imageProcessRequest.images << this.buildAbstractImage(k, v)
+			imageProcessRequest.images << new AbstractImageInfo(imageBytes:v,imageName:k,extension:'jpg')
 		}
 		imageProcessRequest.scalingConfigs = this.buildScalingConfigMap(scalingConfig)
 		return  producerTemplate.requestBody(imageProcessRequest, String.class)
@@ -69,26 +79,29 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 		return resultList
 	}
 
-	AbstractImageInfo buildAbstractImage(final String imageName,final byte[] imageBytes){
-		return new AbstractImageInfo(imageBytes:imageBytes,imageName:imageName,extension:'jpg')
-	}
-
 	@Override
 	ImageMetaModel getImageMetaDataByTagAndName(final String tag,final String name) {
-		return imagingMetaDataRepository.getImageMetaDataByTagAndName(tag, name)
+		Map<String,String> resultMap = imagingMetaDataRepository.getImageMetaDataByTagAndName(tag, name)
+		return imageMetaMapToModelConverter.apply(resultMap)
 	}
 
 	@Override
-	List<ImageMetaModel> getAllImageMetaModel(final String tag)  {
-		return imagingMetaDataRepository.getAllImageMetaModel(tag)
+	List<ImageMetaModel> getImageMetaData(final String tag)  {
+		List<ImageMetaModel> resultList = []
+		Map<String,Map<String,String>> imageMetaDataMap = imagingMetaDataRepository.getImageMetaData(tag)
+		imageMetaDataMap.values().each {
+			resultList << imageMetaMapToModelConverter.apply(it)
+		}
+		return resultList
 	}
 
 	@Override
-	void deleteAllImageMeta(final String tag) {
+	void deleteImage(final String tag) {
+		checkArgument(!StringUtils.isEmpty(tag),"tag can not be null.")
 		def key = S3_IMG_PATH +"/"+ tag
 		amazonS3.deleteObject(awsS3Bucket, key)
 
-		this.getAllImageMetaModel(tag).each {
+		this.getImageMetaData(tag).each {
 			def s3keies = it.s3Path
 			if(s3keies){
 				Iterable<String> values = Splitter.on(IMAGE_SCALINGS_DELIMITER).split(s3keies)
@@ -97,7 +110,23 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 				}
 			}
 		}
-		imagingMetaDataRepository.deleteAllImageMetaByTag(tag)
+		imagingMetaDataRepository.deleteImage(tag)
+	}
+
+	@Override
+	void deleteImage(final String tag,final String name)  {
+		checkArgument(!StringUtils.isEmpty(tag),"tag can not be null.")
+		checkArgument(!StringUtils.isEmpty(name),"name can not be null.")
+
+		Map<String,String> resultMap = imagingMetaDataRepository.getImageMetaDataByTagAndName(tag, name)
+		String imagesS3keies = resultMap['imagesS3Keis']
+		String nodeUri = resultMap['nodeUri']
+		String[] keies = imagesS3keies.split(":")
+
+		keies.each {
+			amazonS3.deleteObject(awsS3Bucket, it)
+		}
+		imagingMetaDataRepository.deleteImageByNodeUri(nodeUri)
 	}
 
 	@Override
@@ -126,6 +155,19 @@ class ImagingProcessDSImpl implements ImagingProcessDS {
 			}
 		}
 		return null
+	}
+
+
+	@Override
+	Page paginate(final Integer pageOffset,final Integer pageSize,final String tag) {
+		Page page = imagingMetaDataRepository.paginateImage(pageOffset, pageSize, tag)
+		log.info "page:{} $page"
+		AbstractCypherQueryResult abstractCypherQueryResult = page.metaContent
+		Set<AbstractCypherQueryNode> nodes = abstractCypherQueryResult.distinctNodes
+		nodes.each {
+			page.content << imageMetaMapToModelConverter.apply(it.dataMap)
+		}
+		return page
 	}
 
 }

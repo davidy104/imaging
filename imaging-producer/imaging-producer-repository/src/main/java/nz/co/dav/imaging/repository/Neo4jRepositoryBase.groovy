@@ -8,6 +8,7 @@ import groovy.util.logging.Slf4j
 import javax.ws.rs.core.Response.Status
 
 import nz.co.dav.imaging.NotFoundException
+import nz.co.dav.imaging.model.Page
 import nz.co.dav.imaging.repository.support.AbstractCypherQueryResult
 import nz.co.dav.imaging.repository.support.Neo4jRestAPIAccessor
 import nz.co.dav.imaging.repository.support.Neo4jRestAPIAccessor.RelationshipDirection
@@ -24,7 +25,7 @@ class Neo4jRepositoryBase implements GeneralNeo4jRepository {
 
 	@Inject
 	Neo4jRestAPIAccessor neo4jRestAPIAccessor
-	
+
 	@Inject
 	@Named("cypherCreateStatmentReqConverter")
 	Function<Map<String,Object>, String> cypherCreateStatmentReqConverter
@@ -103,5 +104,17 @@ class Neo4jRepositoryBase implements GeneralNeo4jRepository {
 			throw new NotFoundException("Relationship not found.")
 		}
 		neo4jRestAPIAccessor.deleteRelationship(relationshipUri)
+	}
+
+	Page paginate(String queryJson,final int pageOffset,final int pageSize, final String distinctColumn){
+		def countQueryJson = queryJson.substring(0,queryJson.indexOf("RETURN"))
+		String query = "{\"query\":\"$countQueryJson RETURN COUNT(*) as total\"}"
+		log.info "query:{} $query"
+		def expectedStatusCode = Status.OK.code
+		AbstractCypherQueryResult result = neo4jRestAPIAccessor.doCypherQuery(query, expectedStatusCode, true,distinctColumn)
+		Long totalCount = new Long(result.dataColumnMap.get("total").first())
+		query = "{\"query\":\"$queryJson SKIP $pageOffset LIMIT $pageSize\"}"
+		result = neo4jRestAPIAccessor.doCypherQuery(query, expectedStatusCode, true,distinctColumn)
+		return new Page(totalCount:totalCount,metaContent:result)
 	}
 }

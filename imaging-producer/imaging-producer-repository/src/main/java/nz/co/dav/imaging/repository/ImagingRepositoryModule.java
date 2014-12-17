@@ -5,13 +5,11 @@ import groovy.json.JsonSlurper;
 import java.util.Map;
 import java.util.Set;
 
-import nz.co.dav.imaging.model.ImageMetaModel;
 import nz.co.dav.imaging.repository.convert.CypherAPIQuerySuccessRespConverter;
 import nz.co.dav.imaging.repository.convert.CypherCreateStatementReqConverter;
 import nz.co.dav.imaging.repository.convert.CypherInPredicateConverter;
 import nz.co.dav.imaging.repository.convert.CypherTransactionalAPIRestSingleTypeRespConverter;
 import nz.co.dav.imaging.repository.convert.CypherUpdateStatementReqConverter;
-import nz.co.dav.imaging.repository.convert.ImageMetaMapToModelConverter;
 import nz.co.dav.imaging.repository.convert.Neo4jAPIErrorRespConverter;
 import nz.co.dav.imaging.repository.convert.Neo4jRestAPIRespJsonConverter;
 import nz.co.dav.imaging.repository.convert.NodeAPIRespConverter;
@@ -104,13 +102,6 @@ public class ImagingRepositoryModule extends AbstractModule {
 	@Named("neo4jAPIErrorRespConverter")
 	public Function<String, String> neo4jAPIErrorRespConverter(final @Named("jsonSlurper") JsonSlurper jsonSlurper) {
 		return new Neo4jAPIErrorRespConverter(jsonSlurper);
-	}
-
-	@Provides
-	@Singleton
-	@Named("imageMetaMapToModelConverter")
-	public Function<Map<String, String>, ImageMetaModel> imageMetaMapToModelConverter() {
-		return new ImageMetaMapToModelConverter();
 	}
 
 	@Provides

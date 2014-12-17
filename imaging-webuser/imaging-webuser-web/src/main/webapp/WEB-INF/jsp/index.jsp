@@ -12,10 +12,11 @@
 <title></title>
 </head>
 <body>
+<div>
 	<h2>
 		<spring:message code="imagingweb.title" />
 	</h2>
-	<div>
+	
 		<form:errors path="searchInfo" cssClass="errorBlock" element="div" />
 		<form:form action="/imagingweb/search" cssClass="well" commandName="searchInfo" method="POST">
 			<div id="control-group-tag class="control-group">

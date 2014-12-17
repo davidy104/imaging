@@ -4,11 +4,13 @@ import groovy.util.logging.Slf4j
 
 import javax.ws.rs.Consumes
 import javax.ws.rs.DELETE
+import javax.ws.rs.DefaultValue
 import javax.ws.rs.GET
 import javax.ws.rs.POST
 import javax.ws.rs.Path
 import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
+import javax.ws.rs.QueryParam
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.MultivaluedMap
 import javax.ws.rs.core.Response
@@ -17,6 +19,7 @@ import javax.ws.rs.core.Response.Status
 import nz.co.dav.imaging.NotFoundException
 import nz.co.dav.imaging.ds.ImagingProcessDS
 import nz.co.dav.imaging.model.ImageMetaModel
+import nz.co.dav.imaging.model.Page
 
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.input.ProxyInputStream
@@ -91,7 +94,7 @@ public class ImagingResource {
 	Response getImageMetaByTag(@PathParam("tag") String tag){
 		List<ImageMetaModel> imageMetaModelList = []
 		try {
-			imageMetaModelList = imagingProcessDS.getAllImageMetaModel(tag)
+			imageMetaModelList = imagingProcessDS.getImageMetaData(tag)
 		} catch (e) {
 			if(e instanceof NotFoundException){
 				return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build()
@@ -101,11 +104,47 @@ public class ImagingResource {
 		return Response.ok(imageMetaModelList).type(MediaType.APPLICATION_JSON).build()
 	}
 
+	@GET
+	@Path("page")
+	@Produces("application/json")
+	Response paginatingImageMeta(@QueryParam("tag") String tag,@QueryParam("offset") int pageOffset,@DefaultValue("5")@QueryParam("size") int pageSize){
+		log.info "paginatingImageMeta start..."
+		log.info "tag:{} $tag"
+		log.info "pageOffset:{} $pageOffset"
+		log.info "pageSize:{} $pageSize"
+		Page page
+		try {
+			page = imagingProcessDS.paginate(pageOffset, pageSize, tag)
+		} catch (final Exception e) {
+			if(!e instanceof NotFoundException){
+				log.error(e)
+				throw e
+			}
+		}
+		return Response.ok(page).type(MediaType.APPLICATION_JSON).build()
+	}
+
 	@DELETE @Path("{tag}")
 	@Produces("application/json")
 	Response deletImage(@PathParam("tag") String tag){
 		try {
-			imagingProcessDS.deleteAllImageMeta(tag)
+			imagingProcessDS.deleteImage(tag)
+		} catch (e) {
+			if(e instanceof NotFoundException ){
+				return Response.status(Status.NOT_FOUND).entity(e.getMessage()).build()
+			} else if(e instanceof AmazonS3Exception){
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build()
+			}
+			throw e
+		}
+		return Response.status(Response.Status.NO_CONTENT).entity("images deleted with tag [$tag]").build()
+	}
+
+	@DELETE @Path("{tag}/{name}")
+	@Produces("application/json")
+	Response deletImage(@PathParam("tag") String tag,@PathParam("name") String name){
+		try {
+			imagingProcessDS.deleteImage(tag, name)
 		} catch (e) {
 			if(e instanceof NotFoundException ){
 				return Response.status(Status.NOT_FOUND).entity(e.getMessage()).build()

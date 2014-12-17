@@ -5,6 +5,7 @@ import groovy.util.logging.Slf4j
 import nz.co.dav.imaging.DuplicatedException
 import nz.co.dav.imaging.NotFoundException
 import nz.co.dav.imaging.model.ImageMetaModel
+import nz.co.dav.imaging.model.Page
 import nz.co.dav.imaging.repository.ImagingMetaDataRepository
 import nz.co.dav.imaging.repository.Neo4jRepositoryBase
 import nz.co.dav.imaging.repository.support.AbstractCypherQueryResult
@@ -12,15 +13,9 @@ import nz.co.dav.imaging.repository.support.AbstractCypherQueryResult
 import org.apache.commons.lang3.StringUtils
 
 import com.google.common.base.Function
-import com.google.inject.Inject
-import com.google.inject.name.Named
 
 @Slf4j
 class ImagingMetaDataRepositoryImpl extends Neo4jRepositoryBase implements ImagingMetaDataRepository{
-
-	@Inject
-	@Named("imageMetaMapToModelConverter")
-	Function<Map<String,String>, ImageMetaModel> imageMetaMapToModelConverter
 
 	@Override
 	String createImageMetaData(final ImageMetaModel imageMetaModel) {
@@ -44,31 +39,49 @@ class ImagingMetaDataRepositoryImpl extends Neo4jRepositoryBase implements Imagi
 			throw new DuplicatedException('image with the same tag and name already existed.')
 		}
 		String addMetaJson = this.cypherCreateStatmentReqConverter.apply(imageMetaModel.metaMap)
-		log.info "addMetaJson:{} $addMetaJson"
+		log.debug "addMetaJson:{} $addMetaJson"
 		return neo4jRestAPIAccessor.createNodeFromCypherAPI("ImageMetaData", addMetaJson)
 	}
 
 	@Override
-	ImageMetaModel getImageMetaDataByTagAndName(final String tag,final String name) {
+	Map<String,String> getImageMetaDataByTagAndName(final String tag,final String name) {
 		AbstractCypherQueryResult result = this.cypherQuery("{\"query\":\"MATCH (i:ImageMetaData) WHERE i.name = '$name' And i.tag = '$tag' RETURN i \"}")
 		Map<String,Map<String,String>> metaResultMap = result.nodeColumnMap.get("i")
+		String nodeUri = metaResultMap.keySet().first()
 		Map<String,String> resultMap = metaResultMap.values().first()
-		return imageMetaMapToModelConverter.apply(resultMap)
+		resultMap.put('nodeUri', nodeUri)
+		return resultMap
 	}
 
 	@Override
-	List<ImageMetaModel> getAllImageMetaModel(final String tag) {
-		List<ImageMetaModel> resultList = []
-		Map<String,Map<String,String>> metaResultMap = this.cypherQuery("{\"query\":\"MATCH (i:ImageMetaData) WHERE i.tag = '$tag' RETURN i \"}").nodeColumnMap.get("i")
-		metaResultMap.values().each {
-			resultList << imageMetaMapToModelConverter.apply(it)
-		}
-		return resultList
+	void deleteImageByNodeUri(final String nodeUri)  {
+		this.deleteNodeByNodeUri(nodeUri)
 	}
 
 	@Override
-	void deleteAllImageMetaByTag(final String tag) {
-		checkArgument(!StringUtils.isEmpty(tag),"tag can not be null.")
+	Map<String,Map<String,String>> getImageMetaData(final String tag) {
+		return this.cypherQuery("{\"query\":\"MATCH (i:ImageMetaData) WHERE i.tag = '$tag' RETURN i \"}").nodeColumnMap.get("i")
+	}
+
+	@Override
+	void deleteImage(final String tag) {
 		cypherUpdateOrDelete("{\"query\":\"MATCH (i:ImageMetaData{tag:{tag}}) DELETE i\",\"params\":{\"tag\":\"$tag\"}}")
+	}
+
+	@Override
+	void deleteImage(final String tag,final String name) {
+		cypherUpdateOrDelete("{\"query\":\"MATCH (i:ImageMetaData{tag:{tag},name:{name}}) DELETE i\",\"params\":{\"tag\":\"$tag\",\"name\":\"$name\"}}")
+	}
+
+	//distinctNodes
+	@Override
+	Page paginateImage(Integer pageOffset, Integer pageSize, String tag)  {
+		String queryJson = "MATCH (i:ImageMetaData)"
+		if(tag){
+			queryJson = "${queryJson} WHERE i.tag = '$tag'"
+		}
+		queryJson = "${queryJson} RETURN i"
+		log.info "queryJson:{} $queryJson"
+		return this.paginate(queryJson, pageOffset, pageSize, "i")
 	}
 }

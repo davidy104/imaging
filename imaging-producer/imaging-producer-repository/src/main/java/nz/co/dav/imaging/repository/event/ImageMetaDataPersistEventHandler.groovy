@@ -37,7 +37,6 @@ class ImageMetaDataPersistEventHandler {
 				log.error "persist image metadata error. $e"
 			}
 		}
-
 		return nodeUris
 	}
 }

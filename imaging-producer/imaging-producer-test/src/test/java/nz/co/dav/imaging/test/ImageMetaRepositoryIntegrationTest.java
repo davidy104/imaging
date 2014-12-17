@@ -1,10 +1,11 @@
 package nz.co.dav.imaging.test;
 
+import java.util.Map;
+
 import nz.co.dav.imaging.SharedModule;
 import nz.co.dav.imaging.config.ConfigurationServiceModule;
 import nz.co.dav.imaging.ds.ImagingDSModule;
 import nz.co.dav.imaging.integration.ImageCamelContextModule;
-import nz.co.dav.imaging.model.ImageMetaModel;
 import nz.co.dav.imaging.repository.ImagingMetaDataRepository;
 import nz.co.dav.imaging.repository.ImagingRepositoryModule;
 import nz.co.dav.imaging.test.GuiceJUnitRunner.GuiceModules;
@@ -44,8 +45,7 @@ public class ImageMetaRepositoryIntegrationTest {
 
 	@Test
 	public void testGet() throws Exception {
-		ImageMetaModel found = imagingMetaDataRepository.getImageMetaDataByTagAndName("office01", "test-1");
-		System.out.println("found:{} " + found);
+		Map<String, String> resultMap = imagingMetaDataRepository.getImageMetaDataByTagAndName("office01", "test-1");
 	}
 
 	@Test
