@@ -30,15 +30,15 @@ import com.sun.jersey.multipart.FormDataMultiPart
 @Slf4j
 class ImageProcessAPIIntegrationTest {
 
-	static final String imageServiceURI = 'http://localhost:8222/image/'
+	static final String imageServiceURI = 'http://localhost/image/'
 
 	private Client jerseyClient
 
-	static final String[] IMAGS = ["test01.JPG", "test02.JPG"]
+	static final String[] IMAGS = ["test01.JPG", "test02.JPG","test03.JPG","test04.JPG","test05.JPG","test06.JPG","test07.JPG"]
 
 	Map<String,byte[]> imagesMap = [:]
 
-	static final String TEST_TAG="office01"
+	static final String TEST_TAG="SANTA PARADE"
 
 	@Inject
 	public void setJerseyClient(Client jerseyClient) {
@@ -48,7 +48,7 @@ class ImageProcessAPIIntegrationTest {
 	@Before
 	void setUp(){
 		IMAGS.eachWithIndex  {obj,i->
-			def imageName = "test-$i"
+			def imageName = "santa-$i"
 			imagesMap.put(imageName, Resources.toByteArray(Resources.getResource(obj)))
 		}
 	}
