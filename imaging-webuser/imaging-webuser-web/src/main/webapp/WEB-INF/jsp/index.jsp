@@ -53,27 +53,36 @@
 			</div>
 		</form:form>
 		
-		<div class="row well">
-			 <div class="span11">
-			 	 <ul class="thumbnails">
-			 	 <c:forEach items="${imageInfos}" var="imageInfo">
-			 	 	<li class="span3">
-	                    <div class="thumbnail">
-	                        <img class="my-square-image" src="${imageInfo.imageUri}" data-src="${imageInfo.imageUri}" />
-	
-	                        <div class="caption">
-	                            <h5><c:out value="${imageInfo.tag}" /></h5>
-	
-	                            <p><c:out value="${imageInfo.name}" /></p>
-	
-	                            <p><a href="place_order.jsp?type=<%=item.getName()%>" class="btn btn-primary">Check Details</a></p>
-	                        </div>
-	                    </div>
-               		</li> 
-               		</c:forEach>           
-			 	 </ul>
-			 </div>
-		</div>
+		<c:choose>
+			<c:when test="${empty imageInfos}">
+			</c:when>
+			<c:otherwise>
+				<div class="row well">
+				 <div class="span11">
+				 	 <ul class="thumbnails">
+				 	 <c:forEach items="${imageInfos}" var="imageInfo">
+				 	 	<li class="span3">
+		                    <div class="thumbnail">
+		                        <img src="${imageInfo.imageUri}" data-src="${imageInfo.imageUri}" alt=""/>
+		
+		                        <div class="caption">
+		                            <h5><c:out value="${imageInfo.name}" /></h5>
+		
+		                            <p><c:out value="${imageInfo.makeAndModel}" /></p>
+		                            
+		                            <p><c:out value="${imageInfo.createTime}" /></p>
+		                            
+		                            <p><a href="/imagingweb" class="btn btn-primary">Check Details</a></p>
+		                        </div>
+		                    </div>
+	               		</li> 
+	               		</c:forEach>           
+				 	 </ul>
+				 </div>
+			</div>
+			</c:otherwise>
+		</c:choose>
+		
 	</div>
 </body>
 </html>

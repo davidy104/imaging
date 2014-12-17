@@ -31,8 +31,6 @@ class ImagingDSImpl implements ImagingDS{
 	@Value('${image.producer_uri}')
 	String imageProducerHostUri
 
-	//	static final String IMAGE_SERVICE_URI="http://localhost/image"
-
 	@Override
 	Set<ImageInfo> getImagingUrisByTag(final String tagName,String scalingType) {
 		if(StringUtils.isEmpty(scalingType)){
@@ -48,16 +46,25 @@ class ImagingDSImpl implements ImagingDS{
 		String responseStr= getResponsePayload(response)
 		checkState(response.getStatus() == Status.OK.code,responseStr)
 
+		//metaMap
 		List resultList = (List)jsonSlurper.parseText(responseStr)
 		resultList.each {
 			Map resultMap = (Map)it
 			def name = resultMap['name']
 			def tag = resultMap['tag']
+			def createTime = resultMap['createTime']
+			Map metaMap = resultMap['metaMap']
+			
+			def model = metaMap['Model']
+			def make = metaMap['Make']
+			def subjectLocation  = metaMap['SubjectLocation']
+			
+			def makeAndModel = make+"-"+model
 			def imageUri = imageProducerHostUri+"/stream/"+tag+"/"+name+"/"+scalingType
-			log.info "imageUri:{} $imageUri"
-			resultSet << new ImageInfo(tag:tag,name:name,imageUri:imageUri)
+			ImageInfo imageInfo = new ImageInfo(tag:tag,name:name,imageUri:imageUri,makeAndModel:makeAndModel,subjectLocation:subjectLocation,createTime:createTime)
+			log.info "imageInfo:{} $imageInfo"
+			resultSet << imageInfo
 		}
-		log.info "resultSet size:{} ${resultSet.size()}"
 		return resultSet
 	}
 
