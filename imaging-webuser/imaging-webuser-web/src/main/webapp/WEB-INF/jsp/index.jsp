@@ -58,10 +58,10 @@
 			</c:when>
 			<c:otherwise>
 				<div class="row well">
-				 <div class="span11">
+				 <div class="span15">
 				 	 <ul class="thumbnails">
 				 	 <c:forEach items="${imageInfos}" var="imageInfo">
-				 	 	<li class="span3">
+				 	 	<li class="span4">
 		                    <div class="thumbnail">
 		                        <img src="${imageInfo.imageUri}" data-src="${imageInfo.imageUri}" alt=""/>
 		

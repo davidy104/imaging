@@ -34,7 +34,7 @@ class ImageProcessAPIIntegrationTest {
 
 	private Client jerseyClient
 
-	static final String[] IMAGS = ["test01.JPG", "test02.JPG","test03.JPG","test04.JPG","test05.JPG","test06.JPG","test07.JPG"]
+	static final String[] IMAGS = ["test01.JPG", "test02.JPG","test03.JPG","test04.JPG","test05.JPG","test06.JPG"]
 
 	Map<String,byte[]> imagesMap = [:]
 
