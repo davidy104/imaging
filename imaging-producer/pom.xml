@@ -147,6 +147,11 @@
 				<version>${guice.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.codehaus.groovy</groupId>
+				<artifactId>groovy-all</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.apache.activemq</groupId>
 				<artifactId>activemq-all</artifactId>
 				<version>${activemq.version}</version>
@@ -161,11 +166,6 @@
 				<artifactId>activemq-core</artifactId>
 				<version>${activemq.version}</version>
 				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.codehaus.groovy</groupId>
-				<artifactId>groovy-all</artifactId>
-				<version>${groovy.version}</version>
 			</dependency>
 			<!-- camel dependencies -->
 			<dependency>
