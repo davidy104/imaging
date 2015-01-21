@@ -11,9 +11,11 @@ import javax.ws.rs.Path
 import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
 import javax.ws.rs.QueryParam
+import javax.ws.rs.core.Context
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.MultivaluedMap
 import javax.ws.rs.core.Response
+import javax.ws.rs.core.UriInfo
 import javax.ws.rs.core.Response.Status
 
 import nz.co.dav.imaging.NotFoundException
@@ -74,8 +76,7 @@ public class ImagingResource {
 	@GET
 	@Path("meta/{tag}/{name}")
 	@Produces("application/json")
-	Response getImageMeta(
-			@PathParam("tag") String tag,@PathParam("name") String name) {
+	Response getImageMeta(@PathParam("tag") String tag,@PathParam("name") String name) {
 		ImageMetaModel foundImageMetaModel
 		try {
 			foundImageMetaModel = imagingProcessDS.getImageMetaDataByTagAndName(tag,name)
@@ -107,13 +108,23 @@ public class ImagingResource {
 	@GET
 	@Path("page")
 	@Produces("application/json")
-	Response paginatingImageMeta(@QueryParam("tag") String tag,@QueryParam("offset") int pageOffset,@DefaultValue("5")@QueryParam("size") int pageSize){
+	Response paginatingImageMeta(@Context final UriInfo uriInfo,@QueryParam("tag") String tag,@QueryParam("offset") int pageOffset,@DefaultValue("5")@QueryParam("size") int pageSize){
 		log.info "paginatingImageMeta start..."
 		log.info "tag:{} $tag"
 		log.info "pageOffset:{} $pageOffset"
 		log.info "pageSize:{} $pageSize"
 		Page page
 		try {
+			String baseUri = uriInfo.getBaseUri().toString()
+			log.info "baseUri:{} $baseUri"
+			
+			String absolutePath = uriInfo.getAbsolutePath().toString();
+			log.info "absolutePath:{} $absolutePath"
+			
+			String newUri = uriInfo.getAbsolutePathBuilder().replaceQueryParam("offset", pageOffset+pageSize).build().toString()
+			log.info "newUri:{} $newUri"
+			
+			
 			page = imagingProcessDS.paginate(pageOffset, pageSize, tag)
 		} catch (final Exception e) {
 			if(!e instanceof NotFoundException){
